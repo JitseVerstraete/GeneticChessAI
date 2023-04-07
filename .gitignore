@@ -1,4 +1,6 @@
 GeneticChessAi/.vs/*
+GeneticChessAi/x64/*
+GeneticChessAi/Release/*
 
 # Prerequisites
 *.d

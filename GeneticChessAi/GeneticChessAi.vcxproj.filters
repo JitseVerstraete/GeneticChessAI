@@ -1,30 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{89e8cd06-3cdb-4b80-8d73-7a26442db522}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="ChessLibrary">
+      <UniqueIdentifier>{607578bf-63d3-4bf4-8941-78f2ae3226aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="main">
+      <UniqueIdentifier>{7dad9d48-e77a-4059-9f47-ff45421a3bb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ChessPlayer">
+      <UniqueIdentifier>{eb68077a-c3c8-474d-92e2-c1c4b69c3e66}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="3rdParty\ChessLibrary\thc.cpp">
+      <Filter>ChessLibrary</Filter>
+    </ClCompile>
     <ClCompile Include="GeneticChessAi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ChessLibrary\thc.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>main</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ChessLibrary\thc.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="3rdParty\ChessLibrary\thc.h">
+      <Filter>ChessLibrary</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
