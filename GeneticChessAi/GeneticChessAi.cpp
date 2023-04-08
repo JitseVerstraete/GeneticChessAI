@@ -4,29 +4,39 @@
 #include <iostream>
 #include <thc.h>
 #include "ChessGUI.h"
+#include "ChessGame.h"
 #include <SDL_events.h>
+#include "HumanPlayer.h"
+#include "RandomBot.h"
 
 
 
 
 int main(int argc, char** argv)
 {
-	thc::ChessRules position{};
-	position.Init();
+	HumanPlayer human{};
+	RandomBot bot{};
 
-	position.Forsyth("rnbqk1nr/ppp2ppp/8/2b1p2Q/4P3/2N5/PPPP2PP/R1B1KBNR b KQkq - 1 5");
+	ChessGame game{&human, &bot, true };
 
-	std::cout << position.ToDebugStr();
-	
-	ChessGUI gui{600};
+	thc::TERMINAL termination = game.PlayGame();
 
-
-	SDL_Event e{};
-	while (!gui.IsQuit())
+	switch (termination)
 	{
-		gui.HandleEvents();
-		gui.DrawBoardState(&position);
-		
+	case thc::TERMINAL_WCHECKMATE:
+		std::cout << "BLACK WON\n";
+		break;
+	case thc::TERMINAL_WSTALEMATE:
+		std::cout << "STALEMATE\n";
+		break;
+	case thc::TERMINAL_BCHECKMATE:
+		std::cout << "WHITE WON\n";
+		break;
+	case thc::TERMINAL_BSTALEMATE:
+		std::cout << "STALEMATE\n";
+		break;
+	default:
+		break;
 	}
 
 

@@ -6,16 +6,17 @@ class SDL_Renderer;
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include "thc.h"
+#include <thread>
 
-class ChessGUI
+class ChessGUI final
 {
 public:
 	ChessGUI(int size);
 	~ChessGUI();
 
 
-	void DrawBoardState(const thc::ChessPositionRaw* position);
 	void HandleEvents();
+	void DrawBoardState(const thc::ChessPositionRaw* position);
 	bool IsQuit();
 
 
@@ -24,6 +25,12 @@ private:
 
 	SDL_Window* m_pWindow{ nullptr };
 	SDL_Renderer* m_pRenderer{ nullptr };
+
+	thc::Square m_DraggedSquare{ thc::SQUARE_INVALID };
+
+
+	thc::Move m_MoveTried;
+
 
 	int m_Size;
 
@@ -36,6 +43,8 @@ private:
 
 
 	bool m_Quit;
+
+
 
 
 };

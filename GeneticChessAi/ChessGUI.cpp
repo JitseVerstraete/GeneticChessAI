@@ -36,7 +36,7 @@ void ChessGUI::DrawBoardState(const thc::ChessPositionRaw* position)
 	SDL_RenderClear(m_pRenderer);
 
 
-	SDL_Rect dstRect{};
+	SDL_FRect dstRect{};
 	dstRect.x = 0;
 	dstRect.y = 0;
 	dstRect.w = m_Size;
@@ -48,7 +48,7 @@ void ChessGUI::DrawBoardState(const thc::ChessPositionRaw* position)
 
 
 	SDL_SetRenderDrawColor(m_pRenderer, m_LightCol.r, m_LightCol.g, m_LightCol.b, m_LightCol.a);
-	SDL_RenderFillRect(m_pRenderer, &dstRect);
+	SDL_RenderFillRectF(m_pRenderer, &dstRect);
 	SDL_SetRenderDrawColor(m_pRenderer, m_DarkCol.r, m_DarkCol.g, m_DarkCol.b, m_DarkCol.a);
 
 	//draw black squares
@@ -63,7 +63,7 @@ void ChessGUI::DrawBoardState(const thc::ChessPositionRaw* position)
 				dstRect.h = squareSize;
 				dstRect.x = c * squareSize;
 				dstRect.y = m_Size - ((r + 1) * squareSize);
-				SDL_RenderFillRect(m_pRenderer, &dstRect);
+				SDL_RenderFillRectF(m_pRenderer, &dstRect);
 			}
 		}
 	}
@@ -123,7 +123,18 @@ void ChessGUI::DrawBoardState(const thc::ChessPositionRaw* position)
 		dstRect.h = squareSize;
 
 
-		SDL_RenderCopy(m_pRenderer, m_pPieceSheet, &srcRect, &dstRect);
+
+		if (i == (int)m_DraggedSquare)
+		{
+			int x{}, y{};
+			SDL_GetMouseState(&x, &y);
+			dstRect.x = x - dstRect.w / 2;
+			dstRect.y = y - dstRect.h / 2;
+		}
+
+
+
+		SDL_RenderCopyF(m_pRenderer, m_pPieceSheet, &srcRect, &dstRect);
 	}
 
 
@@ -137,6 +148,33 @@ void ChessGUI::HandleEvents()
 	if (e.type == SDL_QUIT)
 	{
 		m_Quit = true;
+	}
+
+	if (e.type == SDL_MOUSEBUTTONDOWN)
+	{
+		int mouseX{}, mouseY{};
+		SDL_GetMouseState(&mouseX, &mouseY);
+		int c = mouseX / (m_Size / 8);
+		int r = mouseY / (m_Size / 8);
+			
+		int index = c + (r * 8);
+		m_DraggedSquare = thc::Square(index);
+		m_MoveTried.src = m_DraggedSquare;
+		
+
+		std::cout << m_DraggedSquare << std::endl;
+	}
+	else if (e.type == SDL_MOUSEBUTTONUP)
+	{
+		int mouseX{}, mouseY{};
+		SDL_GetMouseState(&mouseX, &mouseY);
+		int c = mouseX / (m_Size / 8);
+		int r = mouseY / (m_Size / 8);
+
+		int index = c + (r * 8);
+		thc::Square releasedSquare = thc::Square(index);
+		m_MoveTried.dst = releasedSquare;
+
 	}
 }
 

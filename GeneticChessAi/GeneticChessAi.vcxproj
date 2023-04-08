@@ -72,11 +72,12 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdParty\SDL_Image\include;$(SolutionDir)3rdParty\SDL\include;$(SolutionDir)3rdParty\ChessLibrary;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -96,13 +97,14 @@ xcopy /y /d "$(SolutionDir)3rdParty\SDL_Image\lib\x86\SDL2_image.dll" "$(OutDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdParty\SDL_Image\include;$(SolutionDir)3rdParty\SDL\include;$(SolutionDir)3rdParty\ChessLibrary;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -124,11 +126,12 @@ xcopy /y /d "$(SolutionDir)3rdParty\SDL_Image\lib\x86\SDL2_image.dll" "$(OutDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdParty\SDL_Image\include;$(SolutionDir)3rdParty\SDL\include;$(SolutionDir)3rdParty\ChessLibrary;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,13 +147,14 @@ xcopy /y /d "$(SolutionDir)3rdParty\SDL_Image\lib\x64\SDL2_image.dll" "$(OutDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdParty\SDL_Image\include;$(SolutionDir)3rdParty\SDL\include;$(SolutionDir)3rdParty\ChessLibrary;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -168,12 +172,19 @@ xcopy /y /d "$(SolutionDir)3rdParty\SDL_Image\lib\x64\SDL2_image.dll" "$(OutDir)
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="3rdParty\ChessLibrary\thc.cpp" />
+    <ClCompile Include="RandomBot.cpp" />
+    <ClCompile Include="ChessGame.cpp" />
     <ClCompile Include="ChessGUI.cpp" />
     <ClCompile Include="GeneticChessAi.cpp" />
+    <ClCompile Include="HumanPlayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdParty\ChessLibrary\thc.h" />
+    <ClInclude Include="RandomBot.h" />
+    <ClInclude Include="ChessGame.h" />
     <ClInclude Include="ChessGUI.h" />
+    <ClInclude Include="ChessPlayer.h" />
+    <ClInclude Include="HumanPlayer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -13,6 +13,9 @@
     <Filter Include="ChessPlayer">
       <UniqueIdentifier>{eb68077a-c3c8-474d-92e2-c1c4b69c3e66}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ChessGame">
+      <UniqueIdentifier>{175e1dc7-c2a3-4a7c-b5eb-86d1f02c5bb5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3rdParty\ChessLibrary\thc.cpp">
@@ -24,6 +27,15 @@
     <ClCompile Include="ChessGUI.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
+    <ClCompile Include="HumanPlayer.cpp">
+      <Filter>ChessPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="ChessGame.cpp">
+      <Filter>ChessGame</Filter>
+    </ClCompile>
+    <ClCompile Include="RandomBot.cpp">
+      <Filter>ChessPlayer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdParty\ChessLibrary\thc.h">
@@ -31,6 +43,18 @@
     </ClInclude>
     <ClInclude Include="ChessGUI.h">
       <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ChessPlayer.h">
+      <Filter>ChessPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="HumanPlayer.h">
+      <Filter>ChessPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="ChessGame.h">
+      <Filter>ChessGame</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomBot.h">
+      <Filter>ChessPlayer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
