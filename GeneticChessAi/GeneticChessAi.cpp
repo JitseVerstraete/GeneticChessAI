@@ -3,26 +3,31 @@
 
 #include <iostream>
 #include <thc.h>
+#include "ChessGUI.h"
+#include <SDL_events.h>
 
-#define SDL_MAIN_HANDLED
-#include <SDL.h>
+
 
 
 int main(int argc, char** argv)
 {
-    // returns zero on success else non-zero
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        printf("error initializing SDL: %s\n", SDL_GetError());
-    }
-    SDL_Window* win = SDL_CreateWindow("GAME",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        1000, 1000, 0);
+	thc::ChessRules position{};
+	position.Init();
 
+	position.Forsyth("rnbqk1nr/ppp2ppp/8/2b1p2Q/4P3/2N5/PPPP2PP/R1B1KBNR b KQkq - 1 5");
 
-
-    return 0;
+	std::cout << position.ToDebugStr();
 	
+	ChessGUI gui{600};
+
+
+	SDL_Event e{};
+	while (!gui.IsQuit())
+	{
+		gui.HandleEvents();
+		gui.DrawBoardState(&position);
+		
+	}
 
 
 }

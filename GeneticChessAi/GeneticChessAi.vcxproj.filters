@@ -21,10 +21,16 @@
     <ClCompile Include="GeneticChessAi.cpp">
       <Filter>main</Filter>
     </ClCompile>
+    <ClCompile Include="ChessGUI.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdParty\ChessLibrary\thc.h">
       <Filter>ChessLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="ChessGUI.h">
+      <Filter>GUI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
