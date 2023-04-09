@@ -3,7 +3,7 @@
 #include "ChessPlayer.h"
 #include "ChessGUI.h"
 
-class ChessGame 
+class ChessGame final
 {
 public:
 	ChessGame(ChessPlayer* white, ChessPlayer* black, bool drawDebug = false);
@@ -14,7 +14,7 @@ public:
 	thc::TERMINAL PlayGame();
 
 
-protected:
+private:
 
 	ChessPlayer* m_pWhite;
 	ChessPlayer* m_pBlack;

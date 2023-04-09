@@ -14,6 +14,13 @@
 
 int main(int argc, char** argv)
 {
+
+	//TEST INSUFICCIENT MATERIAL DRAW STATES
+
+
+
+
+	/*
 	HumanPlayer human{};
 	RandomBot bot{};
 
@@ -38,6 +45,7 @@ int main(int argc, char** argv)
 	default:
 		break;
 	}
+	*/
 
 
 }
