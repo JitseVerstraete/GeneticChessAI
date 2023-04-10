@@ -2410,12 +2410,12 @@ void ChessRules::GenLegalMoveList( MOVELIST *list, bool check[MAXMOVES],
 /****************************************************************************
  * Check draw rules (50 move rule etc.)
  ****************************************************************************/
-bool ChessRules::IsDraw( bool white_asks, DRAWTYPE &result )
+bool ChessRules::IsDraw( bool white_asks, bool black_asks, DRAWTYPE &result )
 {
     bool   draw=false;
 
     // Insufficient mating material
-    draw =  IsInsufficientDraw( white_asks, result );
+    draw =  IsInsufficientDraw( white_asks, black_asks, result );
 
     // 50 move rule
     if( !draw && half_move_clock>=100 )
@@ -2578,7 +2578,7 @@ int ChessRules::GetRepetitionCount()
 /****************************************************************************
  * Check insufficient material draw rule
  ****************************************************************************/
-bool ChessRules::IsInsufficientDraw( bool white_asks, DRAWTYPE &result )
+bool ChessRules::IsInsufficientDraw( bool white_asks, bool black_asks, DRAWTYPE &result )
 {
     char   piece;
     int    piece_count=0;
@@ -2630,7 +2630,7 @@ bool ChessRules::IsInsufficientDraw( bool white_asks, DRAWTYPE &result )
             draw   = true;
             result = DRAWTYPE_INSUFFICIENT;
         }
-        else if( !white_asks && lone_wking )
+        else if( black_asks && lone_wking )
         {
             draw   = true;
             result = DRAWTYPE_INSUFFICIENT;

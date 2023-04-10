@@ -18,14 +18,10 @@ ChessGame::~ChessGame()
 
 
 
-thc::TERMINAL ChessGame::PlayGame()
+void ChessGame::PlayGame( thc::TERMINAL& terminalState, thc::DRAWTYPE& drawState)
 {
 	thc::TERMINAL terminal{ thc::NOT_TERMINAL };
 	thc::DRAWTYPE draw{ thc::NOT_DRAW };
-
-	bool whiteTurn{  };
-
-
 
 	while (terminal == thc::NOT_TERMINAL && draw == thc::NOT_DRAW)
 	{
@@ -45,12 +41,13 @@ thc::TERMINAL ChessGame::PlayGame()
 		}
 
 		m_pPosition.Evaluate(terminal);
-		
-		m_pPosition.IsDraw(false, draw);
-
+		m_pPosition.IsDraw(false, false, draw);
 	}
 
-	return terminal;
+	terminalState = terminal;
+	drawState = draw;
+
+	return;
 }
 
 

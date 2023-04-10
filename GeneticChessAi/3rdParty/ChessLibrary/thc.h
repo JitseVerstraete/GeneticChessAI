@@ -565,13 +565,13 @@ public:
     void PlayMove( Move imove );
 
     // Check draw rules (50 move rule etc.)
-    bool IsDraw( bool white_asks, DRAWTYPE &result );
+    bool IsDraw( bool white_asks, bool black_asks, DRAWTYPE &result );
 
     // Get number of times position has been repeated
     int GetRepetitionCount();
 
     // Check insufficient material draw rule
-    bool IsInsufficientDraw( bool white_asks, DRAWTYPE &result );
+    bool IsInsufficientDraw( bool white_asks, bool black_asks, DRAWTYPE &result );
 
     // Evaluate a position, returns bool okay (not okay means illegal position)
     bool Evaluate();

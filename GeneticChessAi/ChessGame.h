@@ -11,7 +11,7 @@ public:
 
 	
 
-	thc::TERMINAL PlayGame();
+	void PlayGame(thc::TERMINAL& terminalState, thc::DRAWTYPE& drawState);
 
 
 private:
