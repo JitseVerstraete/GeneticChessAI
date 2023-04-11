@@ -7,54 +7,26 @@
 #include "ChessGame.h"
 #include "HumanPlayer.h"
 #include "RandomBot.h"
+#include "EvalFunctions.h"
+#include "MiniMaxPlayer.h"
 
 
 
 
 int main(int argc, char** argv)
 {
-	{
+	
+	RandomBot botWhite{};
 
-		//TEST INSUFICCIENT MATERIAL DRAW STATES
+	MaterialEval evalFunc{};
+	MiniMaxPlayer<MaterialEval> botBlack{3, evalFunc};
 
-		thc::ChessRules pos{};
-		pos.Forsyth("8/8/7k/8/8/2B5/2N5/4K3 w - - 2 46");
-		std::cout << pos.ToDebugStr();
+	ChessGame game{&botWhite, &botBlack, true };
+	game.setStartingPos("8/3k1r2/8/5p2/5Q2/3K4/8/8 w - - 0 1");
 
-		thc::DRAWTYPE type{};
-		std::cout << pos.IsDraw(true, true, type) << std::endl;
-		std::cout << pos.IsDraw(true, false, type) << std::endl;
-		std::cout << pos.IsDraw(false, true,  type) << std::endl;
-		std::cout << pos.IsDraw(false, false,  type) << std::endl;
-	}
+	game.PlayGame();
 
-	{
-
-		thc::ChessRules pos{};
-		pos.Forsyth("8/8/7K/8/8/2b5/2n5/4k3 w - - 2 46");
-		std::cout << pos.ToDebugStr();
-
-		thc::DRAWTYPE type{};
-		std::cout << pos.IsDraw(true, true, type) << std::endl;
-		std::cout << pos.IsDraw(true, false, type) << std::endl;
-		std::cout << pos.IsDraw(false, true, type) << std::endl;
-		std::cout << pos.IsDraw(false, false, type) << std::endl;
-
-	}
-
-
-
-
-
-	/*
-	HumanPlayer human{};
-	RandomBot bot{};
-
-	ChessGame game{&human, &bot, true };
-
-	thc::TERMINAL termination = game.PlayGame();
-
-	switch (termination)
+	switch (game.GetTerminalState())
 	{
 	case thc::TERMINAL_WCHECKMATE:
 		std::cout << "BLACK WON\n";
@@ -71,7 +43,25 @@ int main(int argc, char** argv)
 	default:
 		break;
 	}
-	*/
+
+	switch (game.GetDrawState())
+	{
+	case thc::DRAWTYPE_50MOVE:
+		std::cout << "50 MOVE RULE DRAW\n";
+		break;
+	case thc::DRAWTYPE_INSUFFICIENT:
+	case thc::DRAWTYPE_INSUFFICIENT_AUTO:
+		std::cout << "INSUFICIENT MATERIAL DRAW\n";
+		break;
+	case thc::DRAWTYPE_REPITITION:
+		std::cout << "REPITITION DRAW\n";
+		break;
+	default:
+		break;
+	}
+
+	std::cout << game.GetMovesRecord();
+	
 
 
 }

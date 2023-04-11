@@ -16,6 +16,9 @@
     <Filter Include="ChessGame">
       <UniqueIdentifier>{175e1dc7-c2a3-4a7c-b5eb-86d1f02c5bb5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{c7002abb-8063-4337-af59-c74de7b6d554}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3rdParty\ChessLibrary\thc.cpp">
@@ -36,6 +39,12 @@
     <ClCompile Include="RandomBot.cpp">
       <Filter>ChessPlayer</Filter>
     </ClCompile>
+    <ClCompile Include="MiniMaxPlayer.cpp">
+      <Filter>ChessPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="EvalFunctions.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdParty\ChessLibrary\thc.h">
@@ -55,6 +64,12 @@
     </ClInclude>
     <ClInclude Include="RandomBot.h">
       <Filter>ChessPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="MiniMaxPlayer.h">
+      <Filter>ChessPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="EvalFunctions.h">
+      <Filter>Helpers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
