@@ -15,13 +15,14 @@
 
 int main(int argc, char** argv)
 {
+
 	MaterialEval evalFunc{};
-	MiniMaxPlayer<MaterialEval> botWhite{5, evalFunc};
+	MiniMaxPlayer<MaterialEval> botWhite{4, evalFunc};
 
 	RandomBot botBlack{};
 
 	ChessGame game{&botWhite, &botBlack, true };
-	game.setStartingPos("8/7k/1R6/RK6/8/8/8/8 w - - 0 1");
+	//game.setStartingPos("8/7k/1R6/RK6/8/8/8/8 w - - 0 1");
 
 	game.PlayGame();
 
@@ -61,6 +62,7 @@ int main(int argc, char** argv)
 
 		std::cout << game.GetMovesRecord();
 
+	
 
 
 
