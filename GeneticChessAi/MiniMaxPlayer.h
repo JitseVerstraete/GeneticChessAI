@@ -20,6 +20,9 @@ private:
 	Eval m_EvalFunction;
 	float MiniMax(thc::ChessRules& position, int depth, bool maximizingPlayer);
 
+
+	const float m_MateScore = 1'000'000.f;
+
 };
 
 
@@ -49,18 +52,16 @@ thc::Move MiniMaxPlayer<Eval>::MakeMove(thc::ChessRules& position)
 
 	float depth = m_depth;
 
-
-
-
 	if (maximize)
 	{
 		bestValue = -FLT_MAX;
 
 		for (thc::Move move : moves)
 		{
-			positionCopy.PushMove(move);
+			positionCopy.PlayMove(move);
 			float score = MiniMax(positionCopy, depth - 1, false);
-			positionCopy.PopMove(move);
+			positionCopy.UnplayMove(move);
+
 			if (score > bestValue)
 			{
 				bestValue = score;
@@ -73,9 +74,11 @@ thc::Move MiniMaxPlayer<Eval>::MakeMove(thc::ChessRules& position)
 		bestValue = FLT_MAX;
 		for (thc::Move move : moves)
 		{
-			positionCopy.PushMove(move);
+			positionCopy.PlayMove(move);
 			float score = MiniMax(positionCopy, depth - 1, true);
-			positionCopy.PopMove(move);
+			positionCopy.UnplayMove(move);
+
+
 			if (score < bestValue)
 			{
 				bestValue = score;
@@ -105,14 +108,14 @@ float MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, bool ma
 		return 0.f;
 	}
 
-	//check for wins
+	//check for wins (adding the remaining depth favors faster mates)
 	switch (terminal)
 	{
 	case thc::TERMINAL_WCHECKMATE:
-		return -FLT_MAX;
+		return -(m_MateScore + float(depth));
 		break;
 	case thc::TERMINAL_BCHECKMATE:
-		return FLT_MAX;
+		return m_MateScore + float(depth); 
 		break;
 	default:
 		break;
@@ -136,9 +139,9 @@ float MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, bool ma
 		
 		for (thc::Move move : moves)
 		{
-			position.PushMove(move);
+			position.PlayMove(move);
 			float score = MiniMax(position, depth - 1, false);
-			position.PopMove(move);
+			position.UnplayMove(move);
 			value = std::max(value, score);
 		}
 	}
@@ -147,9 +150,9 @@ float MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, bool ma
 		value = FLT_MAX;
 		for (thc::Move move : moves)
 		{
-			position.PushMove(move);
+			position.PlayMove(move);
 			float score = MiniMax(position, depth - 1, true);
-			position.PopMove(move);
+			position.UnplayMove(move);
 			value = std::min(value, score);
 		}
 	}
