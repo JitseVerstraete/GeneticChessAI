@@ -4,6 +4,13 @@
 #include <thc.h>
 #include <iostream>
 
+
+struct MoveValue
+{
+	thc::Move move;
+	float value;
+};
+
 template <typename Eval>
 class MiniMaxPlayer final : public ChessPlayer
 {
@@ -18,7 +25,7 @@ public:
 private:
 	int m_depth;
 	Eval m_EvalFunction;
-	float MiniMax(thc::ChessRules& position, int depth, bool maximizingPlayer);
+	MoveValue MiniMax(thc::ChessRules& position, int depth, float alpha, float beta, bool maximizingPlayer);
 
 
 	const float m_MateScore = 1'000'000.f;
@@ -26,12 +33,10 @@ private:
 };
 
 
-
-
 template <typename Eval>
 MiniMaxPlayer<Eval>::MiniMaxPlayer(int depth, const Eval& eval)
 	:m_depth{ depth },
-	m_EvalFunction{eval}
+	m_EvalFunction{ eval }
 {
 	//depth has to be at least one
 	m_depth = std::max(m_depth, 1);
@@ -44,56 +49,15 @@ thc::Move MiniMaxPlayer<Eval>::MakeMove(thc::ChessRules& position)
 	thc::ChessRules positionCopy = position;
 
 
-	float bestValue{};
-	thc::Move bestMove{};
+	MoveValue bestMove = MiniMax(positionCopy, m_depth, -FLT_MAX, FLT_MAX, maximize);
 
-	std::vector<thc::Move> moves{};
-	positionCopy.GenLegalMoveList(moves);
-
-	float depth = m_depth;
-
-	if (maximize)
-	{
-		bestValue = -FLT_MAX;
-
-		for (thc::Move move : moves)
-		{
-			positionCopy.PlayMove(move);
-			float score = MiniMax(positionCopy, depth - 1, false);
-			positionCopy.UnplayMove(move);
-
-			if (score > bestValue)
-			{
-				bestValue = score;
-				bestMove = move;
-			}
-		}
-	}
-	else
-	{
-		bestValue = FLT_MAX;
-		for (thc::Move move : moves)
-		{
-			positionCopy.PlayMove(move);
-			float score = MiniMax(positionCopy, depth - 1, true);
-			positionCopy.UnplayMove(move);
-
-
-			if (score < bestValue)
-			{
-				bestValue = score;
-				bestMove = move;
-			}
-		}
-	}
-
-	return bestMove;
+	return bestMove.move;
 }
 
 
 
 template<typename Eval>
-float MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, bool maximizingPlayer)
+MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, float alpha, float beta, bool maximizingPlayer)
 {
 	thc::TERMINAL terminal{};
 	thc::DRAWTYPE draw{};
@@ -105,17 +69,17 @@ float MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, bool ma
 		terminal == thc::TERMINAL_BSTALEMATE ||
 		terminal == thc::TERMINAL_WSTALEMATE)
 	{
-		return 0.f;
+		return MoveValue(thc::Move(), 0);
 	}
 
 	//check for wins (adding the remaining depth favors faster mates)
 	switch (terminal)
 	{
 	case thc::TERMINAL_WCHECKMATE:
-		return -(m_MateScore + float(depth));
+		return MoveValue(thc::Move(), - (m_MateScore + float(depth)));
 		break;
 	case thc::TERMINAL_BCHECKMATE:
-		return m_MateScore + float(depth); 
+		return MoveValue(thc::Move(), m_MateScore + float(depth));
 		break;
 	default:
 		break;
@@ -125,38 +89,60 @@ float MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, bool ma
 	//if search depth is reached, return evaluation function result
 	if (depth <= 0)
 	{
-		return m_EvalFunction(position);
+		return MoveValue(thc::Move(), m_EvalFunction(position));
 	}
 
 
-	float value{};
+	MoveValue bestMove{};
 	std::vector<thc::Move> moves{};
 	position.GenLegalMoveList(moves);
 
 	if (maximizingPlayer)
 	{
-		value = -FLT_MAX;
-		
+		bestMove.value = -FLT_MAX;
+		bestMove.move = thc::Move();
+
 		for (thc::Move move : moves)
 		{
 			position.PlayMove(move);
-			float score = MiniMax(position, depth - 1, false);
+			float score = MiniMax(position, depth - 1, alpha, beta, false).value;
 			position.UnplayMove(move);
-			value = std::max(value, score);
+			if (score > bestMove.value)
+			{
+				bestMove.value = score;
+				bestMove.move = move;
+			}
+			alpha = std::max(alpha, bestMove.value);
+			if (bestMove.value >= beta)
+			{
+				break;
+			}
+
 		}
 	}
-	else
+	else //minimizing
 	{
-		value = FLT_MAX;
+		bestMove.value = FLT_MAX;
+		bestMove.move = thc::Move();
+
 		for (thc::Move move : moves)
 		{
 			position.PlayMove(move);
-			float score = MiniMax(position, depth - 1, true);
+			float score = MiniMax(position, depth - 1, alpha, beta, true).value;
 			position.UnplayMove(move);
-			value = std::min(value, score);
+			if (score < bestMove.value)
+			{
+				bestMove.value = score;
+				bestMove.move = move;
+			}
+			beta = std::min(beta, bestMove.value);
+			if (bestMove.value <= alpha)
+			{
+				break;
+			}
 		}
 	}
 
-	return value;
+	return bestMove;
 }
 
