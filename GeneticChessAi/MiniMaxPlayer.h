@@ -5,7 +5,6 @@
 #include <iostream>
 #include "MoveOrdering.h"
 
-
 struct MoveValue
 {
 	thc::Move move;
@@ -20,7 +19,7 @@ public:
 	MiniMaxPlayer(int depth, const Eval& eval);
 	~MiniMaxPlayer() = default;
 
-
+	int LeafNodeCount() { return m_leafNodeCounter; }
 	virtual thc::Move MakeMove(thc::ChessRules& position) override;
 
 
@@ -29,6 +28,8 @@ private:
 	Eval m_EvalFunction;
 	MoveValue MiniMax(thc::ChessRules& position, int depth, float alpha, float beta, bool maximizingPlayer);
 
+
+	int m_leafNodeCounter{};
 
 	const float m_MateScore = 1'000'000.f;
 
@@ -47,6 +48,7 @@ MiniMaxPlayer<Eval>::MiniMaxPlayer(int depth, const Eval& eval)
 template <typename Eval>
 thc::Move MiniMaxPlayer<Eval>::MakeMove(thc::ChessRules& position)
 {
+	m_leafNodeCounter = 0;
 	bool maximize = position.WhiteToPlay();
 	thc::ChessRules positionCopy = position;
 
@@ -70,6 +72,7 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 		terminal == thc::TERMINAL_BSTALEMATE ||
 		terminal == thc::TERMINAL_WSTALEMATE)
 	{
+		m_leafNodeCounter++;
 		return MoveValue(thc::Move(), 0);
 	}
 
@@ -77,9 +80,11 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 	switch (terminal)
 	{
 	case thc::TERMINAL_WCHECKMATE:
-		return MoveValue(thc::Move(), - (m_MateScore + float(depth)));
+		m_leafNodeCounter++;
+		return MoveValue(thc::Move(), -(m_MateScore + float(depth)));
 		break;
 	case thc::TERMINAL_BCHECKMATE:
+		m_leafNodeCounter++;
 		return MoveValue(thc::Move(), m_MateScore + float(depth));
 		break;
 	default:
@@ -90,6 +95,7 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 	//if search depth is reached, return evaluation function result
 	if (depth <= 0)
 	{
+		m_leafNodeCounter++;
 		return MoveValue(thc::Move(), m_EvalFunction(position));
 	}
 
@@ -97,11 +103,10 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 	MoveValue bestMove{};
 	std::vector<thc::Move> moves{};
 	position.GenLegalMoveList(moves);
-	//TODO: MOVE ORDERING!
 
 	OrderMoves(moves, position);
-	
-	
+
+
 
 	if (maximizingPlayer)
 	{
