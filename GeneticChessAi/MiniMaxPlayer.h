@@ -102,6 +102,9 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 
 	MoveValue bestMove{};
 	std::vector<thc::Move> moves{};
+	//std::vector<bool> checks{};
+	//std::vector<bool> mates{};
+	//std::vector<bool> stalemates{};
 	position.GenLegalMoveList(moves);
 
 	OrderMoves(moves, position);

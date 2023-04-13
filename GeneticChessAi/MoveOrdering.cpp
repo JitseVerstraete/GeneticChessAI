@@ -26,22 +26,14 @@ float MoveValuePrediction(thc::Move& move, thc::ChessRules& pos)
 
 
 	//checks 
-	char enemyKing = whiteToMove ? 'k' : 'K';
+	auto enemyKing = whiteToMove ? pos.bking_square : pos.wking_square;
 	pos.PushMove(move);
-	for (int i{}; i < 64; ++i)
+	if (pos.AttackedPiece((thc::Square)enemyKing))
 	{
-		if (pos.squares[i] != enemyKing) continue;
-
-		//check if this move puts the king in check
-
-		if (pos.AttackedPiece((thc::Square)i))
-		{
-			value += checkValue;
-		}
-
+		value += checkValue;
 	}
 	pos.PopMove(move);
-	
+
 
 	//give a bonus prediction to captures based on piece type
 	if (isalpha(move.capture))
