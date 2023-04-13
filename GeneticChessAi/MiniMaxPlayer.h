@@ -3,6 +3,7 @@
 #include <functional>
 #include <thc.h>
 #include <iostream>
+#include "MoveOrdering.h"
 
 
 struct MoveValue
@@ -10,6 +11,7 @@ struct MoveValue
 	thc::Move move;
 	float value;
 };
+
 
 template <typename Eval>
 class MiniMaxPlayer final : public ChessPlayer
@@ -47,7 +49,6 @@ thc::Move MiniMaxPlayer<Eval>::MakeMove(thc::ChessRules& position)
 {
 	bool maximize = position.WhiteToPlay();
 	thc::ChessRules positionCopy = position;
-
 
 	MoveValue bestMove = MiniMax(positionCopy, m_depth, -FLT_MAX, FLT_MAX, maximize);
 
@@ -96,6 +97,11 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 	MoveValue bestMove{};
 	std::vector<thc::Move> moves{};
 	position.GenLegalMoveList(moves);
+	//TODO: MOVE ORDERING!
+
+	OrderMoves(moves, position);
+	
+	
 
 	if (maximizingPlayer)
 	{

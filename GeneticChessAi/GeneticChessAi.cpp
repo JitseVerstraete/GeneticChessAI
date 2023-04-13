@@ -16,8 +16,14 @@
 int main(int argc, char** argv)
 {
 
+
+
+
+
+
+	/*
 	MaterialEval evalFunc{};
-	MiniMaxPlayer<MaterialEval> botWhite{4, evalFunc};
+	MiniMaxPlayer botWhite{4, evalFunc};
 
 	RandomBot botBlack{};
 
@@ -62,6 +68,7 @@ int main(int argc, char** argv)
 
 		std::cout << game.GetMovesRecord();
 
+	*/
 	
 
 

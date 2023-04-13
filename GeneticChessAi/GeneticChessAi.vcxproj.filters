@@ -45,6 +45,9 @@
     <ClCompile Include="EvalFunctions.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="MoveOrdering.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdParty\ChessLibrary\thc.h">
@@ -69,6 +72,9 @@
       <Filter>ChessPlayer</Filter>
     </ClInclude>
     <ClInclude Include="EvalFunctions.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveOrdering.h">
       <Filter>Helpers</Filter>
     </ClInclude>
   </ItemGroup>
