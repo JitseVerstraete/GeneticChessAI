@@ -12,11 +12,19 @@
 #include <iomanip>
 #include <numeric>
 
+#include <Eigen/Dense>
 
-
+using Eigen::MatrixXf;
 
 int main(int argc, char** argv)
 {
+
+	//MatrixXf m = MatrixXf();
+
+
+
+	/*
+	std::cout << m;
 	
 	thc::ChessRules pos{};
 	pos.Forsyth("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - - 0 1");
@@ -43,16 +51,15 @@ int main(int argc, char** argv)
 	for (int i{}; i < nrSamples; ++i)
 	{
 		std::cout << "thinking time: " << std::setw(6) << timings[i] << "ms" << std::endl;
-		
+
 
 	}
 
 	std::cout << std::endl;
 	std::cout << "avg thinking time: " << std::setw(6)  << std::accumulate(timings.begin(), timings.end(),0) / timings.size() << "ms" << std::endl;
 	std::cout << "positions evaluated: " << std::setw(30) << std::left << treeSizes[0] << std::endl;
-	
 
-
+	*/
 	
 
 
