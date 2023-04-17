@@ -12,20 +12,29 @@
 #include <iomanip>
 #include <numeric>
 
-#include <Eigen/Dense>
+#include "NeuralNetwork.h"
 
+#include <Eigen/Dense>
 using Eigen::MatrixXf;
+using Eigen::VectorXf;
 
 int main(int argc, char** argv)
 {
+	NeuralNetwork nn{ {5,3,7,1}, 0 };
 
-	//MatrixXf m = MatrixXf();
+	VectorXf input{ nn.GetInputSize() };
+	input << 1, 2, 3, 4, 5;
+
+
+	VectorXf output = nn.Calculate(input);
+
+	std::cout << output;
 
 
 
 	/*
 	std::cout << m;
-	
+
 	thc::ChessRules pos{};
 	pos.Forsyth("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - - 0 1");
 
@@ -60,7 +69,7 @@ int main(int argc, char** argv)
 	std::cout << "positions evaluated: " << std::setw(30) << std::left << treeSizes[0] << std::endl;
 
 	*/
-	
+
 
 
 	/*

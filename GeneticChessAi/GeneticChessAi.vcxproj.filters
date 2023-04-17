@@ -19,6 +19,9 @@
     <Filter Include="Helpers">
       <UniqueIdentifier>{c7002abb-8063-4337-af59-c74de7b6d554}</UniqueIdentifier>
     </Filter>
+    <Filter Include="NeuralNet">
+      <UniqueIdentifier>{680a42f2-41f6-404a-b79c-821b344542ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3rdParty\ChessLibrary\thc.cpp">
@@ -48,6 +51,9 @@
     <ClCompile Include="MoveOrdering.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="NeuralNetwork.cpp">
+      <Filter>NeuralNet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdParty\ChessLibrary\thc.h">
@@ -76,6 +82,9 @@
     </ClInclude>
     <ClInclude Include="MoveOrdering.h">
       <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralNetwork.h">
+      <Filter>NeuralNet</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
