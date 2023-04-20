@@ -11,6 +11,7 @@
 #include "MiniMaxPlayer.h"
 #include <iomanip>
 #include <numeric>
+#include <random>
 
 #include "NeuralNetwork.h"
 
@@ -19,16 +20,27 @@ using Eigen::MatrixXf;
 using Eigen::VectorXf;
 
 int main(int argc, char** argv)
-{
-	NeuralNetwork nn{ {5,3,7,1}, 0 };
+{ 
+
+	//random init test
+	std::random_device rd;
+	std::uniform_real_distribution<float> rw(-0.25f, 0.25f);
+	std::uniform_real_distribution<float> rb{ -1.f, 1.f };
+
+
+	auto randomWeight = [&rd, &rw]() {return rw(rd); };
+	auto randomBias = [&rd, &rb]() {return rb(rd); };
+
+	NeuralNetwork nn{ {5,3,7,1}, Tanh, 1 };
+
+	nn.InitBiases(std::function<float()>(randomBias));
+	nn.InitWeights(randomWeight);
+	nn.PrintMatrices();
 
 	VectorXf input{ nn.GetInputSize() };
-	input << 1, 2, 3, 4, 5;
-
+	input << 0.1f, 0.1f, 0.1f, 0.1f, 0.1f;
 
 	VectorXf output = nn.Calculate(input);
-
-	std::cout << output;
 
 
 
@@ -60,8 +72,6 @@ int main(int argc, char** argv)
 	for (int i{}; i < nrSamples; ++i)
 	{
 		std::cout << "thinking time: " << std::setw(6) << timings[i] << "ms" << std::endl;
-
-
 	}
 
 	std::cout << std::endl;
@@ -116,9 +126,7 @@ int main(int argc, char** argv)
 		default:
 			break;
 		}
-
 			std::cout << game.GetMovesRecord();
-
 	*/
 }
 
