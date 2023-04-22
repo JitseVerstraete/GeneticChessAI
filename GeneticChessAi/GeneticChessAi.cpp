@@ -20,27 +20,27 @@ using Eigen::MatrixXf;
 using Eigen::VectorXf;
 
 int main(int argc, char** argv)
-{ 
+{
 
 	//random init test
 	std::random_device rd;
 	std::uniform_real_distribution<float> rw(-0.25f, 0.25f);
 	std::uniform_real_distribution<float> rb{ -1.f, 1.f };
-
+	std::uniform_int_distribution<int>inputDistr{ -1, 1 };
 
 	auto randomWeight = [&rd, &rw]() {return rw(rd); };
 	auto randomBias = [&rd, &rb]() {return rb(rd); };
+	auto randomInput = [&rd, &inputDistr]() {return inputDistr(rd); };
 
-	NeuralNetwork nn{ {5,3,7,1}, Tanh, 1 };
+	NeuralNetwork nn{ {{768, ReLU} ,{128, ReLU},{16, ReLU},{1, Tanh}}, 1.f };
 
 	nn.InitBiases(std::function<float()>(randomBias));
 	nn.InitWeights(randomWeight);
-	nn.PrintMatrices();
-
 	VectorXf input{ nn.GetInputSize() };
-	input << 0.1f, 0.1f, 0.1f, 0.1f, 0.1f;
+	input = input.NullaryExpr(input.rows(), input.cols(), randomInput);
 
 	VectorXf output = nn.Calculate(input);
+	std::cout << output << std::endl;
 
 
 
