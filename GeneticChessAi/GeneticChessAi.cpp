@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <numeric>
 #include <random>
+#include <fstream>
 
 #include "NeuralNetwork.h"
 
@@ -21,6 +22,21 @@ using Eigen::VectorXf;
 
 int main(int argc, char** argv)
 {
+	NeuralNetwork nn{ {{768, ActivationFunc::None} ,{1, ActivationFunc::ReLU} }, 0.f };
+	NNEval eval{ &nn };
+
+	thc::ChessRules pos{};
+	auto input = eval.EncodeInput(pos);
+
+	for (int i{}; i < input.size(); i++)
+	{
+		if (i % 8 == 0) std::cout << std::endl;
+		if (i % 64 == 0) std::cout << std::endl;
+
+		std::cout << std::right << std::setprecision(2) << std::setw(2) << input[i] << ' ';
+	}
+
+	/*
 
 	//random init test
 	std::random_device rd;
@@ -32,16 +48,46 @@ int main(int argc, char** argv)
 	auto randomBias = [&rd, &rb]() {return rb(rd); };
 	auto randomInput = [&rd, &inputDistr]() {return inputDistr(rd); };
 
-	NeuralNetwork nn{ {{768, ReLU} ,{128, ReLU},{16, ReLU},{1, Tanh}}, 1.f };
+	//NeuralNetwork nn{ {{768, ActivationFunc::ReLU} ,{128, ActivationFunc::ReLU},{16, ActivationFunc::ReLU},{1, ActivationFunc::Tanh}}, 1.f };
+	NeuralNetwork nn{ {{3, ActivationFunc::ReLU} ,{5, ActivationFunc::ReLU},{1, ActivationFunc::Tanh}}, 1.f };
+	NeuralNetwork nn2{ {{2, ActivationFunc::ReLU} ,{3, ActivationFunc::ReLU},{1, ActivationFunc::Tanh}}, 1.f };
 
 	nn.InitBiases(std::function<float()>(randomBias));
 	nn.InitWeights(randomWeight);
+
+	std::ofstream output{ "testfile.txt" };
+	if (output)
+	{
+		std::cout << "MATRIX BEFORE SAVING" << std::endl;
+		nn.PrintMatrices();
+
+
+		nn.Save(output);
+
+		output.close();
+	}
+
+
+	std::ifstream input{ "testfile.txt" };
+	if (input)
+	{
+		std::cout << "MATRIX AFTER LOADING" << std::endl;
+		NeuralNetwork nnLoad = NeuralNetwork::Load(input);
+		nnLoad.PrintMatrices();
+
+
+		std::cout << (nn == nnLoad ? "MATRICES EQUAL" : "MATRICES NOT EQUAL") << std::endl;
+	}
+	*/
+
+
+	/*
 	VectorXf input{ nn.GetInputSize() };
 	input = input.NullaryExpr(input.rows(), input.cols(), randomInput);
 
 	VectorXf output = nn.Calculate(input);
 	std::cout << output << std::endl;
-
+	*/
 
 
 	/*

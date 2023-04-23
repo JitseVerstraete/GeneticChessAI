@@ -18,17 +18,79 @@ NeuralNetwork::NeuralNetwork(const std::vector<LayerSettings>& layers, float val
 		inputVec.setConstant(0);
 		inputVec(inputVec.rows() - 1) = m_BiasInputConstant;
 
-		m_Layers.emplace_back(NNLayer{ std::move(matrix), std::move(inputVec) , (it + 1)->activationFunc });
+		std::function<float(float)> actFunc{};
+		ActivationFunc funcEnum = (it + 1)->activationFunc;
+		switch (funcEnum)
+		{
+		case ActivationFunc::Sigmoid:
+			actFunc = Sigmoid;
+			break;
+		case ActivationFunc::ReLU:
+			actFunc = ReLU;
+			break;
+		case ActivationFunc::Tanh:
+			actFunc = Tanh;
+			break;
+		default:
+			throw "This activation function is not implemented yet";
+			break;
+		}
+
+		m_Layers.emplace_back(NNLayer{ std::move(matrix), std::move(inputVec),funcEnum, actFunc });
 	}
 
+}
+
+NeuralNetwork::NeuralNetwork(const std::vector<LayerSettings>& layerSettings, const std::vector<std::vector<float>>& data)
+	:NeuralNetwork(layerSettings, 0.f)
+{
+	if (m_Layers.size() != data.size())
+	{
+		throw "the amount of data arrays given doesn't match the amount of layer matrices!";
+	}
+
+	for (int i{}; i < m_Layers.size(); ++i)
+	{
+		if (m_Layers[i].matrix.size() != data[i].size())
+		{
+			throw "the amount of data given to a matrix doesnt match the matrix size!";
+		}
+
+		m_Layers[i].matrix = MatrixXf::Map(data[i].data(), m_Layers[i].matrix.rows(), m_Layers[i].matrix.cols());
+	}
+
+
+
+}
+
+NeuralNetwork::NeuralNetwork(const NeuralNetwork& other)
+	:m_Layers{ other.m_Layers }
+{
+}
+
+NeuralNetwork::NeuralNetwork(const NeuralNetwork&& other) noexcept
+	:m_Layers{ other.m_Layers }
+{
+}
+
+NeuralNetwork& NeuralNetwork::operator=(const NeuralNetwork& other)
+{
+	return *this = NeuralNetwork(other);
+}
+
+NeuralNetwork& NeuralNetwork::operator=(NeuralNetwork&& other)noexcept
+{
+	m_Layers = other.m_Layers;
+	return *this;
 }
 
 void NeuralNetwork::PrintMatrices() const
 {
 	for (int i{}; i < m_Layers.size(); ++i)
 	{
-		std::cout << "Layer " << i << ": " << "in(" << m_Layers[i].matrix.cols() << ")" << "out(" << m_Layers[i].matrix.rows() << ")" << std::endl;
-		std::cout << m_Layers[i].matrix << std::endl << std::endl;
+		std::cout << "Layer " << i << ": " << "in(" << m_Layers[i].matrix.cols() - 1 << ")" << "out(" << m_Layers[i].matrix.rows() << ")" << std::endl;
+		std::cout << m_Layers[i].matrix << std::endl;
+		std::cout << "activation func id:" << (int)m_Layers[i].activationEnum << std::endl << std::endl;
 	}
 }
 
@@ -51,6 +113,7 @@ void NeuralNetwork::InitWeights(std::function<float()> NullaryFunction)
 		block = block.NullaryExpr(block.rows(), block.cols(), NullaryFunction);
 	}
 }
+
 
 void NeuralNetwork::InitBiases(float value)
 {
@@ -79,6 +142,179 @@ int NeuralNetwork::GetOutputSize() const
 	return m_Layers[m_Layers.size() - 1].matrix.rows();
 }
 
+std::vector<int> NeuralNetwork::GetLayerSizes() const
+{
+	std::vector<int> toReturn{};
+
+	//add the input size of every matrix
+	for (int i{}; i < m_Layers.size(); ++i)
+	{
+		toReturn.push_back(m_Layers[i].matrix.cols() - 1);
+	}
+
+	//add output size
+	toReturn.push_back(m_Layers[m_Layers.size() - 1].matrix.rows());
+
+	return toReturn;
+}
+
+std::vector<ActivationFunc> NeuralNetwork::GetLayerActivationFunctions() const
+{
+	std::vector<ActivationFunc> toReturn{};
+
+	for (int i{}; i < m_Layers.size(); ++i)
+	{
+		toReturn.push_back(m_Layers[i].activationEnum);
+	}
+
+	return toReturn;
+}
+
+std::vector<MatrixXf> NeuralNetwork::GetLayerMatrices() const
+{
+	std::vector<MatrixXf> toReturn{};
+
+	for (const auto& layer : m_Layers)
+	{
+		toReturn.push_back(layer.matrix);
+	}
+
+	return toReturn;
+}
+
+void NeuralNetwork::Save(std::ostream& os)
+{
+	//write the sizes of the layers
+	for (int size : GetLayerSizes())
+	{
+		os << size << ' ';
+	}
+	os << std::endl;
+
+	//write the activation type coded as an int
+	for (const ActivationFunc& activation : GetLayerActivationFunctions())
+	{
+		os << int(activation) << ' ';
+	}
+	os << std::endl;
+
+	for (const MatrixXf& activation : GetLayerMatrices())
+	{
+		for (float value : activation.reshaped())
+		{
+			os << value << ' ';
+		}
+		os << std::endl;
+	}
+
+	os << std::endl;
+
+}
+
+NeuralNetwork NeuralNetwork::Load(std::istream& is)
+{
+	std::vector<int> layersizes{};
+	std::vector<ActivationFunc> activationFuncs{};
+	std::vector<std::vector<float>> matrixcontents{};
+
+
+	//read layer sizes
+	int foundInt{};
+
+	std::string line{};
+	std::getline(is, line);
+	std::stringstream ss{ line };
+
+	while (ss >> foundInt)
+	{
+		layersizes.push_back(foundInt);
+	}
+
+
+	//read layer functions
+	activationFuncs.push_back(ActivationFunc::None);
+
+	int activationFuncInt{};
+
+	std::getline(is, line);
+	ss.clear();
+	ss.str(line);
+
+	while (ss >> activationFuncInt)
+	{
+		activationFuncs.push_back((ActivationFunc)activationFuncInt);
+	}
+
+
+	//read network data
+	MatrixXf matrix{};
+	std::vector<float> listOfWeights{};
+
+	for (int i{}; i < layersizes.size() - 1; ++i)
+	{
+		matrix = MatrixXf(layersizes[i + 1], layersizes[i] + 1);
+		float weight{};
+
+		std::getline(is, line);
+		ss.clear();
+		ss.str(line);
+
+		while (ss >> weight)
+		{
+			listOfWeights.push_back(weight);
+		}
+
+		matrixcontents.push_back(listOfWeights);
+		listOfWeights.clear();
+	}
+
+	//create neural network and move it to the nn variable
+
+	std::vector<LayerSettings> settings{ layersizes.size() };
+	for (int i{}; i < settings.size(); ++i)
+	{
+		settings[i].nrNodes = layersizes[i];
+		settings[i].activationFunc = activationFuncs[i];
+	}
+
+	return NeuralNetwork(settings, matrixcontents);
+
+}
+
+bool NeuralNetwork::operator==(const NeuralNetwork& other)
+{
+	//compare sizes
+	if (m_Layers.size() != other.m_Layers.size()) return false;
+
+	auto itThis{ m_Layers.begin() };
+	auto itOther{ other.m_Layers.begin() };
+
+	//compare matrix contents
+	while (itThis != m_Layers.end() && itOther != other.m_Layers.end())
+	{
+		if (itThis->matrix.rows() != itOther->matrix.rows() || itThis->matrix.cols() != itOther->matrix.cols())
+		{
+			return false;
+		}
+
+		bool matrixequal = itThis->matrix.isApprox(itOther->matrix);
+		bool activequal = itThis->activationEnum == itOther->activationEnum;
+
+		if (!matrixequal || !activequal)
+		{
+			return false;
+		}
+
+		itThis++;
+		itOther++;
+	}
+
+	return true;
+
+}
+
+
+
 VectorXf NeuralNetwork::Calculate(VectorXf input)
 {
 	for (NNLayer& layer : m_Layers)
@@ -101,9 +337,7 @@ VectorXf NeuralNetwork::Calculate(VectorXf input)
 		//activation function
 		input = input.unaryExpr(layer.activation);
 
-
 	}
 
 	return input;
 }
-

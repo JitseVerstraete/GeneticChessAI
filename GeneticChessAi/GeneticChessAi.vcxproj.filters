@@ -83,14 +83,14 @@
     <ClInclude Include="EvalFunctions.h">
       <Filter>Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="MoveOrdering.h">
-      <Filter>Helpers</Filter>
-    </ClInclude>
     <ClInclude Include="NeuralNetwork.h">
       <Filter>NeuralNet</Filter>
     </ClInclude>
     <ClInclude Include="ActivationFunctions.h">
       <Filter>NeuralNet</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveOrdering.h">
+      <Filter>main</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
