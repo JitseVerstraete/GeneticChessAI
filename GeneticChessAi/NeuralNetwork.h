@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <functional>
 #include "ActivationFunctions.h"
+#include <memory>
 
 
 using Eigen::MatrixXf;
@@ -36,17 +37,23 @@ public:
 
 	void PrintMatrices() const;
 
-	void InitWeights(float value);
+	void SetConstant(float value);
 	void InitWeights(std::function<float()> NullaryFunction);
-
-	void InitBiases(float value);
+	void InitWeightsRandom(float min, float max);
 	void InitBiases(std::function<float()> NullaryFunction);
+	void InitBiasesRandom(float min, float max);
 
 	int GetInputSize() const;
 	int GetOutputSize() const;
+
 	std::vector<int> GetLayerSizes() const;
 	std::vector<ActivationFunc> GetLayerActivationFunctions() const;
 	std::vector<MatrixXf> GetLayerMatrices() const;
+
+	MatrixXf& GetLayerMatrix(int index);
+	int GetNrLayerMatrices() const;
+
+
 
 	void Save(std::ostream& os);
 	static NeuralNetwork Load(std::istream& is);
@@ -63,7 +70,6 @@ private:
 	struct NNLayer
 	{
 		MatrixXf matrix;
-		VectorXf inputVector;
 		ActivationFunc activationEnum;
 		std::function<float(float)> activation;
 	};

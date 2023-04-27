@@ -1,5 +1,6 @@
 #include "NeuralNetwork.h"
 
+#include <random>
 #include <iostream>
 
 NeuralNetwork::NeuralNetwork(const std::vector<LayerSettings>& layers, float value)
@@ -14,9 +15,11 @@ NeuralNetwork::NeuralNetwork(const std::vector<LayerSettings>& layers, float val
 		MatrixXf matrix{ (it + 1)->nrNodes, it->nrNodes + 1 };
 		matrix.setConstant(value);
 
+		/*
 		VectorXf inputVec(matrix.cols());
 		inputVec.setConstant(0);
 		inputVec(inputVec.rows() - 1) = m_BiasInputConstant;
+		*/
 
 		std::function<float(float)> actFunc{};
 		ActivationFunc funcEnum = (it + 1)->activationFunc;
@@ -36,7 +39,7 @@ NeuralNetwork::NeuralNetwork(const std::vector<LayerSettings>& layers, float val
 			break;
 		}
 
-		m_Layers.emplace_back(NNLayer{ std::move(matrix), std::move(inputVec),funcEnum, actFunc });
+		m_Layers.emplace_back(NNLayer{ std::move(matrix), funcEnum, actFunc });
 	}
 
 }
@@ -94,16 +97,16 @@ void NeuralNetwork::PrintMatrices() const
 	}
 }
 
-
-void NeuralNetwork::InitWeights(float value)
+void NeuralNetwork::SetConstant(float value)
 {
 	for (auto& layer : m_Layers)
 	{
-
-		layer.matrix.leftCols(layer.matrix.cols() - 1).setConstant(value);
+		layer.matrix.setConstant(value);
 	}
-
 }
+
+
+
 
 void NeuralNetwork::InitWeights(std::function<float()> NullaryFunction)
 {
@@ -114,14 +117,16 @@ void NeuralNetwork::InitWeights(std::function<float()> NullaryFunction)
 	}
 }
 
-
-void NeuralNetwork::InitBiases(float value)
+void NeuralNetwork::InitWeightsRandom(float min, float max)
 {
-	for (auto& layer : m_Layers)
-	{
-		layer.matrix.rightCols(1).setConstant(value);
-	}
+	std::random_device rd;
+	std::uniform_real_distribution<float> weightDistr(min, max);
+
+	auto randomWeights = [&rd, &weightDistr]() {return weightDistr(rd); };
+	InitWeights(randomWeights);
 }
+
+
 
 void NeuralNetwork::InitBiases(std::function<float()> NullaryFunction)
 {
@@ -130,6 +135,16 @@ void NeuralNetwork::InitBiases(std::function<float()> NullaryFunction)
 		auto block = layer.matrix.rightCols(1);
 		block = block.NullaryExpr(block.rows(), block.cols(), NullaryFunction);
 	}
+}
+
+void NeuralNetwork::InitBiasesRandom(float min, float max)
+{
+	std::random_device rd;
+	std::uniform_real_distribution<float> biasDistr(min, max);
+
+	auto randomBiases = [&rd, &biasDistr]() {return biasDistr(rd); };
+	InitBiases(randomBiases);
+
 }
 
 int NeuralNetwork::GetInputSize() const
@@ -182,6 +197,22 @@ std::vector<MatrixXf> NeuralNetwork::GetLayerMatrices() const
 	return toReturn;
 }
 
+
+MatrixXf& NeuralNetwork::GetLayerMatrix(int index)
+{
+	if (index < 0 || index >= m_Layers.size())
+	{
+		throw std::out_of_range("index too big");
+	}
+	return m_Layers[index].matrix;
+}
+
+int NeuralNetwork::GetNrLayerMatrices() const
+{
+	return m_Layers.size();
+}
+
+
 void NeuralNetwork::Save(std::ostream& os)
 {
 	//write the sizes of the layers
@@ -198,9 +229,9 @@ void NeuralNetwork::Save(std::ostream& os)
 	}
 	os << std::endl;
 
-	for (const MatrixXf& activation : GetLayerMatrices())
+	for (const MatrixXf& m : GetLayerMatrices())
 	{
-		for (float value : activation.reshaped())
+		for (float value : m.reshaped())
 		{
 			os << value << ' ';
 		}

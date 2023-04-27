@@ -1,5 +1,7 @@
 #include "EvalFunctions.h"
 
+//MaterialEval
+
 const std::map<char, float> MaterialEval::pieceValues = { {'p', 1}, { 'b', 3 }, { 'n', 3 }, { 'r', 5 }, { 'q', 9 }, { 'k', 1'000'000 } };
 float MaterialEval::operator()(const thc::ChessRules& position)
 {
@@ -22,11 +24,12 @@ float MaterialEval::operator()(const thc::ChessRules& position)
 
 
 
-
+//NNEval
 
 const std::map<char, int> NNEval::m_LayerIndices = {
 	{'P', 0}, { 'N', 1 }, { 'B', 2 }, { 'R', 3 }, { 'Q', 4}, { 'K', 5 },
 	{'p', 6}, { 'n', 7 }, { 'b', 8 }, { 'r', 9 }, { 'q', 10}, { 'k', 11 } };
+
 NNEval::NNEval(NeuralNetwork* pNetwork)
 {
 
