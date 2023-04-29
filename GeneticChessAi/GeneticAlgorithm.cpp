@@ -2,6 +2,10 @@
 #include <numeric>
 #include <iostream>
 #include <random>
+#include "MiniMaxPlayer.h" 
+#include "ChessGame.h"
+
+
 
 GeneticAlgorithm::GeneticAlgorithm(const GeneticSettings& settings)
 	:m_Settings{ settings }
@@ -11,22 +15,22 @@ GeneticAlgorithm::GeneticAlgorithm(const GeneticSettings& settings)
 	m_Settings.mutationMax = std::abs(m_Settings.mutationMax);
 }
 
-void GeneticAlgorithm::InitializePopulation(std::vector<NeuralNetwork*> initialPopulation)
+void GeneticAlgorithm::InitializeExistingPopulation(const std::vector<NeuralNetwork>& initialPopulation)
 {
-	for (NeuralNetwork* nn : initialPopulation)
+	for (const NeuralNetwork& nn : initialPopulation)
 	{
-		m_Individuals.push_back(GeneticAlgorithm::Individual(nn, 0.f));
+		m_Individuals.push_back(std::make_shared<GeneticAlgorithm::Individual>(GeneticAlgorithm::Individual(std::make_unique<NeuralNetwork>(nn), 0.f, 0.f)));
 	}
 }
 
-void GeneticAlgorithm::InitializePopulation(const NeuralNetwork& networkTemplate, int populationSize, float weightInitRange, float biasInitRange)
+void GeneticAlgorithm::InitializeNewPopulation(const NeuralNetwork& networkTemplate, int populationSize, float weightInitRange, float biasInitRange)
 {
 	for (int i{}; i < populationSize; ++i)
 	{
-		NeuralNetwork* nn = new NeuralNetwork(networkTemplate);
-		nn->InitWeightsRandom(-std::abs(weightInitRange), std::abs(weightInitRange));
-		nn->InitBiasesRandom(-std::abs(biasInitRange), std::abs(biasInitRange));
-		m_Individuals.push_back(GeneticAlgorithm::Individual(nn, 0.f));
+		NeuralNetwork nn = networkTemplate;
+		nn.InitWeightsRandom(-std::abs(weightInitRange), std::abs(weightInitRange));
+		nn.InitBiasesRandom(-std::abs(biasInitRange), std::abs(biasInitRange));
+		m_Individuals.push_back(std::make_shared<GeneticAlgorithm::Individual>(GeneticAlgorithm::Individual(std::make_unique<NeuralNetwork>(nn), 0.f, 0.f)));
 	}
 
 }
@@ -39,18 +43,16 @@ void GeneticAlgorithm::Run()
 		EvaluateFitness();
 
 		//select partents
-		std::vector<std::pair<NeuralNetwork*, NeuralNetwork*>> parents = SelectParents();
+		std::vector<std::pair<IndividualPtr, IndividualPtr>> parents = SelectParents();
 
-		//perform Crossover with selected parents
 		for (int i{}; i < parents.size(); ++i)
 		{
-			auto child = Crossover(parents[i]);
-		}
+			//create new child through crossover
+			auto child = Crossover(parents[i].first->pNetwork.get(), parents[i].second->pNetwork.get());
+			//mutate the values of the child
+			Mutate(child);
 
-		//mutate the new population
-		for (auto individual : m_Individuals)
-		{
-			Mutate(individual.pNetwork);
+			m_Individuals[i]->pNetwork = std::make_unique<NeuralNetwork>(child);
 		}
 
 		//reset fitness values
@@ -64,8 +66,8 @@ void GeneticAlgorithm::ResetFitness()
 {
 	for (auto& individual : m_Individuals)
 	{
-		individual.fitness = 0.f;
-		individual.weight = 0.f;
+		individual->fitness = 0.f;
+		individual->weight = 0.f;
 	}
 }
 
@@ -74,7 +76,7 @@ void GeneticAlgorithm::EvaluateFitness()
 	ResetFitness();
 
 	//create matches, first is white, black is second
-	std::vector<std::pair<NeuralNetwork*, NeuralNetwork*>> gamePairings;
+	std::vector<std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>>> gamePairings;
 
 	for (int playerIndex{}; playerIndex < m_Individuals.size(); playerIndex++)
 	{
@@ -84,10 +86,12 @@ void GeneticAlgorithm::EvaluateFitness()
 
 			if (playerIndex != opponentIndex)
 			{
-				Individual player{ m_Individuals[playerIndex] };
-				Individual opponent{ m_Individuals[opponentIndex] };
-				auto gamePair = (gameNr < m_Settings.gamesPlayed / 2) ? std::pair(player.pNetwork, opponent.pNetwork) : std::pair(opponent.pNetwork, player.pNetwork);
-				
+				std::shared_ptr<Individual> player{ m_Individuals[playerIndex] };
+				std::shared_ptr<Individual>  opponent{ m_Individuals[opponentIndex] };
+				auto gamePair = (gameNr < m_Settings.gamesPlayed / 2) ?
+					std::pair(std::shared_ptr<Individual>(player), std::shared_ptr<Individual>(opponent)) :
+					std::pair(std::shared_ptr<Individual>(opponent), std::shared_ptr<Individual>(player));
+
 				gamePairings.push_back(gamePair);
 
 				//only increment the game nr if a match was successfully created
@@ -100,49 +104,79 @@ void GeneticAlgorithm::EvaluateFitness()
 
 
 	//play matches
+	//todo: multithread playing the matches
 
 
-	//process all match results
+	//the first of the pair is white, the second in black
+	for (auto& pairing : gamePairings)
+	{
+		MiniMaxPlayer<NNEval> wPlayer{ m_Settings.minMaxDepth, NNEval(pairing.first->pNetwork.get()) };
+		MiniMaxPlayer<NNEval> bPlayer{ m_Settings.minMaxDepth, NNEval(pairing.second->pNetwork.get()) };
+
+		ChessGame game = ChessGame(&wPlayer, &bPlayer, false);
+		game.PlayGame();
+		GameResult result = game.GetGameResult();
+
+		switch (result)
+		{
+		case GameResult::Draw:
+			pairing.first->fitness += 0.5f;
+			pairing.second->fitness += 0.5f;
+			break;
+		case GameResult::WhiteWin:
+			pairing.first->fitness += 1.f;
+			break;
+		case GameResult::BlackWin:
+			pairing.second->fitness += 1.f;
+			break;
+		case GameResult::NoResult:
+			assert(false && "it should be impossible for the game to have no result after playing!");
+			break;
+		default:
+			break;
+		}
+
+	}
 
 }
 
-std::vector<std::pair<NeuralNetwork*, NeuralNetwork*>> GeneticAlgorithm::SelectParents()
+std::vector<std::pair<GeneticAlgorithm::IndividualPtr, GeneticAlgorithm::IndividualPtr>> GeneticAlgorithm::SelectParents()
 {
-	std::vector<std::pair<NeuralNetwork*, NeuralNetwork*>> parents{};
+	std::vector<std::pair<IndividualPtr, IndividualPtr>> parents{};
 
 	float totalFitness{};
 	for (const auto& ind : m_Individuals)
 	{
-		totalFitness += ind.fitness;
+		totalFitness += ind->fitness;
 	}
 
 	for (auto& ind : m_Individuals)
 	{
-		ind.weight = ind.fitness / totalFitness;
+		ind->weight = ind->fitness / totalFitness;
 	}
 
 
 
-	Individual parent1{};
-	Individual parent2{};
+	IndividualPtr pParent1{};
+	IndividualPtr pParent2{};
 
 	while (parents.size() < m_Individuals.size())
 	{
 		do
 		{
-			parent1 = PickIndividual();
-			parent2 = PickIndividual();
+			pParent1 = PickIndividual();
+			pParent2 = PickIndividual();
 
-		} while (parent1.pNetwork == parent2.pNetwork);
+		} while (pParent1->pNetwork == pParent2->pNetwork);
 
 		//add the parents to the 
-		parents.push_back(std::pair<NeuralNetwork*, NeuralNetwork*>(parent1.pNetwork, parent2.pNetwork));
+		parents.push_back(std::pair<IndividualPtr, IndividualPtr>(pParent1, pParent2));
 	}
 
 	return parents;
 }
 
-const GeneticAlgorithm::Individual& GeneticAlgorithm::PickIndividual()
+GeneticAlgorithm::IndividualPtr GeneticAlgorithm::PickIndividual()
 {
 	float currentValue{};
 
@@ -153,7 +187,7 @@ const GeneticAlgorithm::Individual& GeneticAlgorithm::PickIndividual()
 
 	for (const auto& ind : m_Individuals)
 	{
-		currentValue += ind.weight;
+		currentValue += ind->weight;
 		if (targetValue <= currentValue)
 		{
 			return ind;
@@ -165,10 +199,10 @@ const GeneticAlgorithm::Individual& GeneticAlgorithm::PickIndividual()
 
 
 
-NeuralNetwork GeneticAlgorithm::Crossover(std::pair<NeuralNetwork*, NeuralNetwork*> parents)
+NeuralNetwork GeneticAlgorithm::Crossover( NeuralNetwork* parent1, NeuralNetwork* parent2)
 {
 	//uniform crossover
-	NeuralNetwork childNetwork = *parents.first;
+	NeuralNetwork childNetwork = *parent1;
 
 
 	for (int index{}; index < childNetwork.GetNrLayerMatrices(); index++)
@@ -179,7 +213,7 @@ NeuralNetwork GeneticAlgorithm::Crossover(std::pair<NeuralNetwork*, NeuralNetwor
 		{
 			for (int col{}; col < matrix.cols(); ++col)
 			{
-				matrix(row, col) = (rand() % 2 == 0) ? parents.first->GetLayerMatrix(index)(row, col) : parents.second->GetLayerMatrix(index)(row, col);
+				matrix(row, col) = (rand() % 2 == 0) ? parent1->GetLayerMatrix(index)(row, col) : parent2->GetLayerMatrix(index)(row, col);
 			}
 		}
 	}
@@ -188,22 +222,22 @@ NeuralNetwork GeneticAlgorithm::Crossover(std::pair<NeuralNetwork*, NeuralNetwor
 }
 
 
-void GeneticAlgorithm::Mutate(NeuralNetwork* network)
+void GeneticAlgorithm::Mutate(NeuralNetwork& network)
 {
 	std::random_device rd;
 	std::uniform_real_distribution uniDistr{ 0.f, 1.f };
 	std::normal_distribution normalDistr{ 0.f, m_Settings.mutationDeviation };
 
 
-	for (int index{}; index < network->GetNrLayerMatrices(); index++)
+	for (int index{}; index < network.GetNrLayerMatrices(); index++)
 	{
-		for (auto& value : network->GetLayerMatrix(index).reshaped())
+		for (auto& value : network.GetLayerMatrix(index).reshaped())
 		{
 			float rand{ uniDistr(rd) };
 			if (rand < m_Settings.mutationChance)
 			{
 				//mutate the gene (adding random generated value to the weight/bias)
-				value += std::clamp(1 + normalDistr(rd), -m_Settings.mutationMax, m_Settings.mutationMax);
+				value += std::clamp(normalDistr(rd), -m_Settings.mutationMax, m_Settings.mutationMax);
 			}
 
 		}

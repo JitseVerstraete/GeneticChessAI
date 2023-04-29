@@ -3,6 +3,15 @@
 #include "ChessPlayer.h"
 #include "ChessGUI.h"
 
+
+enum class GameResult
+{
+	Draw,
+	WhiteWin,
+	BlackWin,
+	NoResult
+};
+
 class ChessGame final
 {
 public:
@@ -16,6 +25,7 @@ public:
 
 	thc::TERMINAL GetTerminalState() { return m_TerminalState; };
 	thc::DRAWTYPE GetDrawState() { return m_DrawState; };
+	GameResult GetGameResult();
 
 	std::string GetMovesRecord();
 

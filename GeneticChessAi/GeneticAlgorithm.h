@@ -3,60 +3,64 @@
 #include <vector>
 
 
+
 struct GeneticSettings
 {
 	//general
-	int gamesPlayed;
-	int maxGenerations;
-	int saveFrequency;
+	int maxGenerations = 100;
+	//int saveFrequency = 100;
 
 	//selection
+	int gamesPlayed = 10;
+	int minMaxDepth = 2;
+	//int elitismSize = 0;
 
 	//crossover
 
 	//mutation
-	float mutationChance;
-	float mutationDeviation;
-	float mutationMax;
+	float mutationChance = 0.1f;
+	float mutationDeviation = 0.1f;
+	float mutationMax = FLT_MAX;
 };
 
 class GeneticAlgorithm
 {
+	
 public:
 	GeneticAlgorithm(const GeneticSettings& settings);
 
-	void InitializePopulation(std::vector<NeuralNetwork*> initialPopulation);
-	void InitializePopulation(const NeuralNetwork& networkTemplate, int populationSize, float weightInitRange, float biasInitRange);
+	void InitializeExistingPopulation(const std::vector<NeuralNetwork>& initialPopulation);
+	void InitializeNewPopulation(const NeuralNetwork& networkTemplate, int populationSize, float weightInitRange, float biasInitRange);
 
 	void Run();
-	NeuralNetwork Crossover(std::pair<NeuralNetwork*, NeuralNetwork*> parents);
 
 private:
 
 	//structs
 	struct Individual
 	{
-		NeuralNetwork* pNetwork;
+		std::unique_ptr<NeuralNetwork> pNetwork;
 		float fitness;
 		float weight;
 	};
-
+	using IndividualPtr = std::shared_ptr<Individual>;
 
 	//variables
 	GeneticSettings m_Settings;
-	std::vector<Individual> m_Individuals;
+	std::vector<std::shared_ptr<Individual>> m_Individuals;
 
 
 
 	//methods
 	void ResetFitness();
 	void EvaluateFitness();
+	NeuralNetwork Crossover(NeuralNetwork* parent1, NeuralNetwork* parent2);
+	void Mutate(NeuralNetwork& network);
 
-	std::vector<std::pair<NeuralNetwork*, NeuralNetwork*>> SelectParents();
-	const Individual& PickIndividual();
+	std::vector<std::pair<IndividualPtr, IndividualPtr>> SelectParents();
+	IndividualPtr PickIndividual();
 
 
-	void Mutate(NeuralNetwork* network);
 
 
 };

@@ -4,6 +4,7 @@
 #include <thc.h>
 #include <iostream>
 #include "MoveOrdering.h"
+#include "EvalFunctions.h"
 
 struct MoveValue
 {

@@ -24,20 +24,11 @@ using Eigen::VectorXf;
 
 int main(int, char**)
 {
+	GeneticSettings settings{};
+	GeneticAlgorithm ga{ settings };
+	
+	
 
-	std::random_device rd;
-	std::normal_distribution normalDistr{ 0.f, 0.5f };
-
-	int counter{};
-	for (int i{}; i < 100'000'000; i++)
-	{
-		float number = normalDistr(rd);
-		if (std::abs(number) > 2.f)
-		{
-			counter++;
-		}
-	}
-	std::cout << counter;
 
 
 
@@ -48,15 +39,16 @@ int main(int, char**)
 	nn->InitBiasesRandom(-0.25f, 0.25f);
 	nn->InitWeightsRandom(-0.25f, 0.25f);
 
-	NeuralNetwork* nn2 = new NeuralNetwork{ {{10, ActivationFunc::None}, {5, ActivationFunc::ReLU} , {1, ActivationFunc::Tanh}},0.f };
-	nn2->InitBiasesRandom(-0.25f, 0.25f);
-	nn2->InitWeightsRandom(-0.25f, 0.25f);
+	NeuralNetwork* nn2 = new NeuralNetwork{ *nn };
+
 
 
 	GeneticSettings settings{};
+	settings.mutationChance = 0.5f;
+	settings.mutationDeviation = 0.1f;
 	GeneticAlgorithm ga{ settings };
 
-	auto result = ga.Crossover(std::pair< NeuralNetwork*, NeuralNetwork*>(nn, nn2));
+	//ga.Mutate(*nn2);
 
 
 	for (int i{}; i < nn->GetNrLayerMatrices(); ++i)
@@ -67,19 +59,15 @@ int main(int, char**)
 			{
 				std::cout << std::setw(10) << std::setprecision(2) << nn->GetLayerMatrix(i)(row, col);
 				std::cout << std::setw(10) << std::setprecision(2) << nn2->GetLayerMatrix(i)(row, col);
-
-				std::cout << std::setw(4) << std::setprecision(2) << '|' << result.GetLayerMatrix(i)(row, col);
+				std::cout << std::setw(10) << std::setprecision(2) << '|' << ((nn->GetLayerMatrix(i)(row, col) == nn2->GetLayerMatrix(i)(row, col)) ? "EQUAL" : "MUTATED");
 
 				std::cout << std::endl;
 			}
 		}
 		std::cout << std::endl;
 	}
+
 	*/
-
-
-
-
 
 
 	/*

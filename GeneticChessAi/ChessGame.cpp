@@ -77,6 +77,45 @@ void ChessGame::setStartingPos(std::string fen)
 	m_pPosition.Forsyth(fen.c_str());
 }
 
+GameResult ChessGame::GetGameResult()
+{
+	if (GetTerminalState() == thc::NOT_TERMINAL && GetDrawState() == thc::NOT_DRAW)
+		return GameResult::NoResult;
+
+	switch (GetTerminalState())
+	{
+	case thc::TERMINAL_WCHECKMATE:
+		return GameResult::BlackWin;
+		break;
+
+	case thc::TERMINAL_BCHECKMATE:
+		return GameResult::WhiteWin;
+		break;
+
+	case thc::TERMINAL_WSTALEMATE:
+	case thc::TERMINAL_BSTALEMATE:
+		return GameResult::Draw;
+		break;
+	default:
+		break;
+	}
+
+	switch (GetDrawState())
+	{
+	case thc::DRAWTYPE_50MOVE:		
+	case thc::DRAWTYPE_INSUFFICIENT:
+	case thc::DRAWTYPE_INSUFFICIENT_AUTO:
+	case thc::DRAWTYPE_REPITITION:
+		return GameResult::Draw;
+		break;
+	
+	default:
+		break;
+	}
+
+	return GameResult();
+}
+
 std::string ChessGame::GetMovesRecord()
 {
 	std::string gameString{};
