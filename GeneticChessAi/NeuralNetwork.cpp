@@ -352,7 +352,7 @@ VectorXf NeuralNetwork::Calculate(VectorXf input)
 	{
 		if (input.size() != layer.matrix.cols() - 1)
 		{
-			throw "the size of the input vector does not match the layer matrix!\n";
+			throw std::exception("the size of the input vector does not match the layer matrix!\n");
 		}
 
 		//todo: optimization suggestion: use the stored input vector in the layer and copy the passed input vecor over to it

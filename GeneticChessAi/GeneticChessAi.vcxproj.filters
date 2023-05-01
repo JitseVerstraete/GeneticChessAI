@@ -25,6 +25,9 @@
     <Filter Include="GeneticAlgorithm">
       <UniqueIdentifier>{216449b2-8cc0-487a-a620-82fb92f47be2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Timer">
+      <UniqueIdentifier>{33491bec-8ae5-4d17-976f-a3d4c26a515c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3rdParty\ChessLibrary\thc.cpp">
@@ -63,6 +66,9 @@
     <ClCompile Include="GeneticAlgorithm.cpp">
       <Filter>GeneticAlgorithm</Filter>
     </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>Timer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdParty\ChessLibrary\thc.h">
@@ -100,6 +106,9 @@
     </ClInclude>
     <ClInclude Include="GeneticAlgorithm.h">
       <Filter>GeneticAlgorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>Timer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

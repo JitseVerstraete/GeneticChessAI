@@ -4,6 +4,7 @@
 #include <random>
 #include "MiniMaxPlayer.h" 
 #include "ChessGame.h"
+#include "Timer.h"
 
 
 
@@ -37,10 +38,14 @@ void GeneticAlgorithm::InitializeNewPopulation(const NeuralNetwork& networkTempl
 
 void GeneticAlgorithm::Run()
 {
+	Timer timer{};
 	for (int generationCounter{}; generationCounter < m_Settings.maxGenerations; ++generationCounter)
 	{
+		std::cout << "Generation " << generationCounter + 1 << '/' << m_Settings.maxGenerations << " : " << std::endl;
 
+		timer.Start();
 		EvaluateFitness();
+		std::cout << "Fitness evaluation time: " << timer.GetDuration<std::milli>() << "ms" << std::endl;
 
 		//select partents
 		std::vector<std::pair<IndividualPtr, IndividualPtr>> parents = SelectParents();
@@ -58,7 +63,7 @@ void GeneticAlgorithm::Run()
 		//reset fitness values
 		ResetFitness();
 
-		std::cout << "Generation " << generationCounter << '/' << m_Settings.maxGenerations << std::endl;
+		std::cout << "DONE" << std::endl << std::endl;;
 	}
 }
 
@@ -199,7 +204,7 @@ GeneticAlgorithm::IndividualPtr GeneticAlgorithm::PickIndividual()
 
 
 
-NeuralNetwork GeneticAlgorithm::Crossover( NeuralNetwork* parent1, NeuralNetwork* parent2)
+NeuralNetwork GeneticAlgorithm::Crossover(NeuralNetwork* parent1, NeuralNetwork* parent2)
 {
 	//uniform crossover
 	NeuralNetwork childNetwork = *parent1;

@@ -105,6 +105,8 @@ xcopy /y /d "$(SolutionDir)3rdParty\SDL_Image\lib\x86\SDL2_image.dll" "$(OutDir)
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdParty\eigen;$(SolutionDir)3rdParty\SDL_Image\include;$(SolutionDir)3rdParty\SDL\include;$(SolutionDir)3rdParty\ChessLibrary;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <Optimization>Full</Optimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,6 +157,8 @@ xcopy /y /d "$(SolutionDir)3rdParty\SDL_Image\lib\x64\SDL2_image.dll" "$(OutDir)
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdParty\eigen;$(SolutionDir)3rdParty\SDL_Image\include;$(SolutionDir)3rdParty\SDL\include;$(SolutionDir)3rdParty\ChessLibrary;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <Optimization>Full</Optimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -183,6 +187,7 @@ xcopy /y /d "$(SolutionDir)3rdParty\SDL_Image\lib\x64\SDL2_image.dll" "$(OutDir)
     <ClCompile Include="ChessGUI.cpp" />
     <ClCompile Include="GeneticChessAi.cpp" />
     <ClCompile Include="HumanPlayer.cpp" />
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdParty\ChessLibrary\thc.h" />
@@ -197,6 +202,7 @@ xcopy /y /d "$(SolutionDir)3rdParty\SDL_Image\lib\x64\SDL2_image.dll" "$(OutDir)
     <ClInclude Include="ChessGUI.h" />
     <ClInclude Include="ChessPlayer.h" />
     <ClInclude Include="HumanPlayer.h" />
+    <ClInclude Include="Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
