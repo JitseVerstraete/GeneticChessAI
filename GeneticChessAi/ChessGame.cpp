@@ -113,7 +113,7 @@ GameResult ChessGame::GetGameResult()
 		break;
 	}
 
-	return GameResult();
+	return GameResult::NoResult;
 }
 
 std::string ChessGame::GetMovesRecord()

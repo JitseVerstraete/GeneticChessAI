@@ -5,6 +5,8 @@
 #include "MiniMaxPlayer.h" 
 #include "ChessGame.h"
 #include "Timer.h"
+#include <thread>
+#include <future>
 
 
 
@@ -38,6 +40,7 @@ void GeneticAlgorithm::InitializeNewPopulation(const NeuralNetwork& networkTempl
 
 void GeneticAlgorithm::Run()
 {
+	float totalTime{};
 	Timer timer{};
 	for (int generationCounter{}; generationCounter < m_Settings.maxGenerations; ++generationCounter)
 	{
@@ -46,6 +49,8 @@ void GeneticAlgorithm::Run()
 		timer.Start();
 		EvaluateFitness();
 		std::cout << "Fitness evaluation time: " << timer.GetDuration<std::milli>() << "ms" << std::endl;
+		totalTime += timer.GetDuration<std::milli>();
+
 
 		//select partents
 		std::vector<std::pair<IndividualPtr, IndividualPtr>> parents = SelectParents();
@@ -65,6 +70,8 @@ void GeneticAlgorithm::Run()
 
 		std::cout << "DONE" << std::endl << std::endl;;
 	}
+
+	std::cout << "Avg fitness time (" << m_Settings.threads << " threads): " << totalTime / m_Settings.maxGenerations << " ms" << std::endl;
 }
 
 void GeneticAlgorithm::ResetFitness()
@@ -76,17 +83,51 @@ void GeneticAlgorithm::ResetFitness()
 	}
 }
 
+GeneticAlgorithm::GameRecord GeneticAlgorithm::PlayGame(IndividualPtr pWhite, IndividualPtr pBlack)
+{
+	GameRecord record{};
+	record.pWhite = pWhite;
+	record.pBlack = pBlack;
+
+
+	MiniMaxPlayer<NNEval> wPlayer{ m_Settings.minMaxDepth, NNEval(pWhite->pNetwork.get()) };
+	MiniMaxPlayer<NNEval> bPlayer{ m_Settings.minMaxDepth, NNEval(pBlack->pNetwork.get()) };
+
+	ChessGame game = ChessGame(&wPlayer, &bPlayer, false);
+	game.PlayGame();
+
+
+	record.result = game.GetGameResult();
+
+	return record;
+}
+
+std::vector<GeneticAlgorithm::GameRecord> GeneticAlgorithm::ProcessGames(const std::vector<std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>>>& pairings)
+{
+	std::vector<GameRecord> records{};
+
+	for (const auto& pairing : pairings)
+	{
+		records.push_back(PlayGame(pairing.first, pairing.second));
+	}
+
+	return records;
+}
+
 void GeneticAlgorithm::EvaluateFitness()
 {
 	ResetFitness();
 
+
 	//create matches, first is white, black is second
-	std::vector<std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>>> gamePairings;
+	std::vector< std::vector<std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>>>> gamePairings(m_Settings.threads);
 
 	for (int playerIndex{}; playerIndex < m_Individuals.size(); playerIndex++)
 	{
 		for (int gameNr{}; gameNr < m_Settings.gamesPlayed;)
 		{
+			int gameIndex = gameNr + (playerIndex * m_Settings.gamesPlayed);
+
 			int opponentIndex = rand() % m_Individuals.size();
 
 			if (playerIndex != opponentIndex)
@@ -97,7 +138,8 @@ void GeneticAlgorithm::EvaluateFitness()
 					std::pair(std::shared_ptr<Individual>(player), std::shared_ptr<Individual>(opponent)) :
 					std::pair(std::shared_ptr<Individual>(opponent), std::shared_ptr<Individual>(player));
 
-				gamePairings.push_back(gamePair);
+				//put the pairings in separate lists according to how many threads are used
+				gamePairings[gameIndex % m_Settings.threads].push_back(gamePair);
 
 				//only increment the game nr if a match was successfully created
 				gameNr++;
@@ -106,41 +148,38 @@ void GeneticAlgorithm::EvaluateFitness()
 	}
 
 
+	std::vector<std::future<std::vector<GameRecord>>> futures{};
 
-
-	//play matches
-	//todo: multithread playing the matches
-
-
-	//the first of the pair is white, the second in black
-	for (auto& pairing : gamePairings)
+	//process the games asynchronously
+	for (auto& pairingGroup : gamePairings)
 	{
-		MiniMaxPlayer<NNEval> wPlayer{ m_Settings.minMaxDepth, NNEval(pairing.first->pNetwork.get()) };
-		MiniMaxPlayer<NNEval> bPlayer{ m_Settings.minMaxDepth, NNEval(pairing.second->pNetwork.get()) };
+		futures.push_back(std::async(std::launch::async, &GeneticAlgorithm::ProcessGames, this, std::ref(pairingGroup)));
+	}
 
-		ChessGame game = ChessGame(&wPlayer, &bPlayer, false);
-		game.PlayGame();
-		GameResult result = game.GetGameResult();
-
-		switch (result)
+	//loop over the futures and extract the gamerecords from them & process the results
+	for (auto& future : futures)
+	{
+		for (const GameRecord& record : future.get())
 		{
-		case GameResult::Draw:
-			pairing.first->fitness += 0.5f;
-			pairing.second->fitness += 0.5f;
-			break;
-		case GameResult::WhiteWin:
-			pairing.first->fitness += 1.f;
-			break;
-		case GameResult::BlackWin:
-			pairing.second->fitness += 1.f;
-			break;
-		case GameResult::NoResult:
-			assert(false && "it should be impossible for the game to have no result after playing!");
-			break;
-		default:
-			break;
+			switch (record.result)
+			{
+			case GameResult::Draw:
+				record.pWhite->fitness += 0.5f;
+				record.pBlack->fitness += 0.5f;
+				break;
+			case GameResult::WhiteWin:
+				record.pWhite->fitness += 1.f;
+				break;
+			case GameResult::BlackWin:
+				record.pBlack->fitness += 1.f;
+				break;
+			case GameResult::NoResult:
+				assert(false && "it should be impossible for the game to have no result after playing!");
+				break;
+			default:
+				break;
+			}
 		}
-
 	}
 
 }

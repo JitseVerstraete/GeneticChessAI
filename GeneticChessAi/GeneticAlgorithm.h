@@ -1,13 +1,16 @@
 #pragma once
 #include "NeuralNetwork.h"
 #include <vector>
+#include "ChessGame.h"
 
 
 
 struct GeneticSettings
 {
 	//general
+
 	int maxGenerations = 100;
+	int threads = 1;
 	//int saveFrequency = 100;
 
 	//selection
@@ -25,7 +28,7 @@ struct GeneticSettings
 
 class GeneticAlgorithm
 {
-	
+
 public:
 	GeneticAlgorithm(const GeneticSettings& settings);
 
@@ -53,7 +56,22 @@ private:
 
 	//methods
 	void ResetFitness();
+
+
+	struct GameRecord
+	{
+		IndividualPtr pWhite;
+		IndividualPtr pBlack;
+		GameResult result;
+	};
+
+	GameRecord PlayGame(IndividualPtr white, IndividualPtr black);
+	std::vector<GameRecord> ProcessGames(const std::vector<std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>>>& pairings);
 	void EvaluateFitness();
+
+
+
+
 	NeuralNetwork Crossover(NeuralNetwork* parent1, NeuralNetwork* parent2);
 	void Mutate(NeuralNetwork& network);
 

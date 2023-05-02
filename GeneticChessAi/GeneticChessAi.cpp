@@ -27,14 +27,18 @@ using Eigen::VectorXf;
 int main(int, char**)
 {
 
+
 	GeneticSettings settings{};
+	settings.maxGenerations = 10;
 	settings.gamesPlayed = 2;
+	settings.threads = 12;
 	GeneticAlgorithm ga{ settings };
 
-	NeuralNetwork nnTemplate{ {{ 768, ActivationFunc::None}, {128, ActivationFunc::ReLU}, {32, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f};
+	NeuralNetwork nnTemplate{ {{ 768, ActivationFunc::None}, {128, ActivationFunc::ReLU}, {32, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
 	ga.InitializeNewPopulation(nnTemplate, 10, 0.5f, 0.5f);
 
 	ga.Run();
+
 
 
 	/*
@@ -240,5 +244,9 @@ int main(int, char**)
 		}
 			std::cout << game.GetMovesRecord();
 	*/
+
+
+
 }
+
 
