@@ -62,7 +62,10 @@ public:
 
 
 	//a value of 1.f will be appended to the input automatically for the bias layer.
-	VectorXf Calculate(VectorXf input);
+	VectorXf Calculate(const VectorXf& input);
+	//VectorXf CalculateV2(VectorXf input);
+	//VectorXf CalculateV3(const VectorXf& input);
+
 
 
 private:
@@ -70,9 +73,12 @@ private:
 	struct NNLayer
 	{
 		MatrixXf matrix;
+		VectorXf inputVector;
 		ActivationFunc activationEnum;
 		std::function<float(float)> activation;
 	};
+
+	VectorXf m_TempCalculationVector;
 
 
 	//the last column of every layer matrix are 

@@ -54,7 +54,6 @@ thc::Move MiniMaxPlayer<Eval>::MakeMove(thc::ChessRules& position)
 	thc::ChessRules positionCopy = position;
 
 	MoveValue bestMove = MiniMax(positionCopy, m_depth, -FLT_MAX, FLT_MAX, maximize);
-
 	return bestMove.move;
 }
 

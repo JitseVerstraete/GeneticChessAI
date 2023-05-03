@@ -15,11 +15,11 @@ NeuralNetwork::NeuralNetwork(const std::vector<LayerSettings>& layers, float val
 		MatrixXf matrix{ (it + 1)->nrNodes, it->nrNodes + 1 };
 		matrix.setConstant(value);
 
-		/*
+
 		VectorXf inputVec(matrix.cols());
 		inputVec.setConstant(0);
 		inputVec(inputVec.rows() - 1) = m_BiasInputConstant;
-		*/
+
 
 		std::function<float(float)> actFunc{};
 		ActivationFunc funcEnum = (it + 1)->activationFunc;
@@ -39,7 +39,7 @@ NeuralNetwork::NeuralNetwork(const std::vector<LayerSettings>& layers, float val
 			break;
 		}
 
-		m_Layers.emplace_back(NNLayer{ std::move(matrix), funcEnum, actFunc });
+		m_Layers.emplace_back(NNLayer{ std::move(matrix), inputVec,  funcEnum, actFunc });
 	}
 
 }
@@ -346,7 +346,53 @@ bool NeuralNetwork::operator==(const NeuralNetwork& other)
 
 
 
-VectorXf NeuralNetwork::Calculate(VectorXf input)
+
+VectorXf NeuralNetwork::Calculate(const VectorXf& input)
+{
+	auto it = m_Layers.begin();
+
+	//setting inital input vector
+	it->inputVector.topRows(it->inputVector.size() - 1) = input;
+	it->inputVector.bottomRows(1).setConstant(m_BiasInputConstant);
+
+	while (it != m_Layers.end())
+	{
+		if (it->inputVector.size() != it->matrix.cols())
+		{
+			throw std::exception("the size of the input vector does not match the layer matrix!\n");
+		}
+
+
+		/*
+		//resize the input vector to add a 1
+		input.conservativeResize(input.size() + 1);
+		input(input.size() - 1) = m_BiasInputConstant;
+		*/
+
+		if (it + 1 != m_Layers.end())
+		{
+			VectorXf& nextInput = (it + 1)->inputVector;
+
+			//compute weight matrix
+			nextInput.topRows(nextInput.rows() - 1) = it->matrix * it->inputVector;
+
+			//activation function
+			nextInput = nextInput.unaryExpr(it->activation);
+			nextInput.bottomRows(1).setConstant(m_BiasInputConstant);
+
+			++it;
+		}
+		else
+		{
+			m_TempCalculationVector = it->matrix * it->inputVector;
+			m_TempCalculationVector = m_TempCalculationVector.unaryExpr(it->activation);
+			return m_TempCalculationVector;
+		}
+	}
+}
+
+/*
+VectorXf NeuralNetwork::CalculateV2(VectorXf input)
 {
 	for (NNLayer& layer : m_Layers)
 	{
@@ -372,3 +418,31 @@ VectorXf NeuralNetwork::Calculate(VectorXf input)
 
 	return input;
 }
+
+
+VectorXf NeuralNetwork::CalculateV3(const VectorXf& input)
+{
+	m_TempCalculationVector = input;
+
+	for (NNLayer& layer : m_Layers)
+	{
+		if (layer.inputVector.size() != layer.matrix.cols())
+		{
+			throw std::exception("the size of the input vector does not match the layer matrix!\n");
+		}
+
+		//set input vector
+		layer.inputVector.topRows(layer.inputVector.size() - 1) = m_TempCalculationVector;
+		layer.inputVector.bottomRows(1).setConstant(m_BiasInputConstant);
+
+		//compute weight matrix
+		m_TempCalculationVector = layer.matrix * layer.inputVector;
+
+		//activation function
+		m_TempCalculationVector = m_TempCalculationVector.unaryExpr(layer.activation);
+
+	}
+
+	return m_TempCalculationVector;
+}
+*/
