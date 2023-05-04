@@ -8,10 +8,11 @@
 struct GeneticSettings
 {
 	//general
+	std::string PopulationName = "UNNAMED";
 
 	int maxGenerations = 100;
 	int threads = 1;
-	//int saveFrequency = 100;
+	int saveFrequency = 0;
 
 	//selection
 	int gamesPlayed = 10;
@@ -37,6 +38,8 @@ public:
 
 	void Run();
 
+	void SaveGeneration();
+
 private:
 
 	//structs
@@ -56,11 +59,13 @@ private:
 	GeneticSettings m_Settings;
 	std::vector<std::shared_ptr<Individual>> m_Individuals;
 
+	int m_GenerationCounter;
+	std::string m_OutputPath;
 
+	static const std::string m_ResultRootDir;
 
 	//methods
 	void ResetFitness();
-
 
 	struct GameRecord
 	{
@@ -73,16 +78,16 @@ private:
 	std::vector<GameRecord> ProcessGames(const std::vector<std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>>>& pairings);
 	void EvaluateFitness();
 
-
-
-
 	NeuralNetwork Crossover(NeuralNetwork* parent1, NeuralNetwork* parent2);
 	void Mutate(NeuralNetwork& network);
 
 	std::vector<std::pair<IndividualPtr, IndividualPtr>> SelectParents();
 	IndividualPtr PickIndividual();
 
+	void PrepOutputFolder();
 
+	void SaveGeneration(std::ostream& out);
+	void LoadGeneration(std::istream& in);
 
 
 };

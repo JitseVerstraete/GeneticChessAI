@@ -298,6 +298,7 @@ NeuralNetwork NeuralNetwork::Load(std::istream& is)
 		matrixcontents.push_back(listOfWeights);
 		listOfWeights.clear();
 	}
+	std::getline(is, line);
 
 	//create neural network and move it to the nn variable
 
@@ -390,6 +391,7 @@ VectorXf NeuralNetwork::Calculate(const VectorXf& input)
 		}
 	}
 }
+
 
 /*
 VectorXf NeuralNetwork::CalculateV2(VectorXf input)

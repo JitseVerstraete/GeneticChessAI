@@ -1,5 +1,6 @@
 // GeneticChessAi.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
 #include <thc.h>
@@ -19,6 +20,8 @@
 #include "NeuralNetwork.h"
 #include <memory>
 #include "Timer.h"
+#include <ctime>
+#include <filesystem>
 
 #include <Eigen/Dense>
 using Eigen::MatrixXf;
@@ -27,7 +30,6 @@ using Eigen::VectorXf;
 
 int main(int, char**)
 {
-	
 	/*
 	NeuralNetwork nn{ {{ 768, ActivationFunc::None}, {64, ActivationFunc::ReLU}, {16, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
 	nn.InitBiasesRandom(-0.5f, 0.5f);
@@ -58,22 +60,23 @@ int main(int, char**)
 
 	*/
 
-
-
 	
+
 	GeneticSettings settings{};
-	settings.maxGenerations = 10;
+	settings.maxGenerations = 100;
 	settings.gamesPlayed = 2;
 	settings.threads = 12;
 	settings.elitismSize = 3;
+	settings.saveFrequency = 9;
+	settings.PopulationName = "testGen";
 	GeneticAlgorithm ga{ settings };
 
-	NeuralNetwork nnTemplate{ {{ 768, ActivationFunc::None}, {128, ActivationFunc::ReLU}, {32, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
-	ga.InitializeNewPopulation(nnTemplate, 5, 0.5f, 0.5f);
-
+	//NeuralNetwork nnTemplate{ {{ 768, ActivationFunc::None}, {128, ActivationFunc::ReLU}, {32, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
+	NeuralNetwork nnTemplate{ {{768, ActivationFunc::None}, {32, ActivationFunc::ReLU}, {16, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
+	ga.InitializeNewPopulation(nnTemplate, 10, 0.5f, 0.5f);
 	ga.Run();
 	
+
 }
 
 
-  

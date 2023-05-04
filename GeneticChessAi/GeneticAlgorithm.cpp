@@ -8,10 +8,14 @@
 #include <thread>
 #include <future>
 #include <algorithm>
+#include <fstream>
+#include <filesystem>
 
+const std::string GeneticAlgorithm::m_ResultRootDir = "GA-Ouput";
 
 GeneticAlgorithm::GeneticAlgorithm(const GeneticSettings& settings)
 	:m_Settings{ settings }
+	, m_GenerationCounter{ 0 }
 {
 	srand(unsigned int(time(NULL)));
 	//if the mutation max setting is negative, turn it positive
@@ -41,11 +45,13 @@ void GeneticAlgorithm::InitializeNewPopulation(const NeuralNetwork& networkTempl
 
 void GeneticAlgorithm::Run()
 {
+	PrepOutputFolder();
+
 	float totalTime{};
 	Timer timer{};
-	for (int generationCounter{}; generationCounter < m_Settings.maxGenerations; ++generationCounter)
+	for (m_GenerationCounter = 0; m_GenerationCounter < m_Settings.maxGenerations; ++m_GenerationCounter)
 	{
-		std::cout << "Generation " << generationCounter + 1 << '/' << m_Settings.maxGenerations << " : " << std::endl;
+		std::cout << "Generation " << m_GenerationCounter + 1 << '/' << m_Settings.maxGenerations << " : " << std::endl;
 
 		timer.Start();
 		EvaluateFitness();
@@ -77,10 +83,67 @@ void GeneticAlgorithm::Run()
 		//reset fitness values
 		ResetFitness();
 
+		if (m_Settings.saveFrequency != 0 && m_GenerationCounter % m_Settings.saveFrequency == 0)
+		{
+			SaveGeneration();
+			std::cout << "SAVED" << std::endl;
+		}
 		std::cout << "DONE" << std::endl << std::endl;;
 	}
 
+	SaveGeneration();
 	std::cout << "Avg fitness time (" << m_Settings.threads << " threads): " << totalTime / m_Settings.maxGenerations << " ms" << std::endl;
+}
+
+void GeneticAlgorithm::SaveGeneration()
+{
+	
+	std::stringstream ss{};
+	ss << m_OutputPath << "/Generation-" << m_GenerationCounter << ".txt";
+	std::ofstream out{ ss.str() };
+
+	SaveGeneration(out);
+}
+
+void GeneticAlgorithm::PrepOutputFolder()
+{
+	std::stringstream ss{};
+	ss << m_ResultRootDir << '/' << m_Settings.PopulationName;
+	std::string path = ss.str();
+	std::filesystem::remove_all(path);
+	std::filesystem::create_directories(path);
+
+	m_OutputPath = path;
+}
+
+void GeneticAlgorithm::SaveGeneration(std::ostream& out)
+{
+	out << m_Individuals.size() << std::endl;
+
+	for (IndividualPtr ind : m_Individuals)
+	{
+		ind->pNetwork->Save(out);
+	}
+}
+
+void GeneticAlgorithm::LoadGeneration(std::istream& in)
+{
+	std::string line{};
+	std::getline(in, line);
+
+	std::stringstream ss{ line };
+	int popSize{};
+	ss >> popSize;
+
+
+	std::vector<NeuralNetwork> networks{};
+	for (int i{}; i < popSize; i++)
+	{
+		networks.push_back(NeuralNetwork::Load(in));
+	}
+
+	InitializeExistingPopulation(networks);
+
 }
 
 void GeneticAlgorithm::ResetFitness()
