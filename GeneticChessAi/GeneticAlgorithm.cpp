@@ -11,7 +11,7 @@
 #include <fstream>
 #include <filesystem>
 
-const std::string GeneticAlgorithm::m_ResultRootDir = "GA-Ouput";
+const std::string GeneticAlgorithm::m_ResultRootDir = "GA-Output";
 
 GeneticAlgorithm::GeneticAlgorithm(const GeneticSettings& settings)
 	:m_Settings{ settings }
@@ -20,6 +20,23 @@ GeneticAlgorithm::GeneticAlgorithm(const GeneticSettings& settings)
 	srand(unsigned int(time(NULL)));
 	//if the mutation max setting is negative, turn it positive
 	m_Settings.mutationMax = std::abs(m_Settings.mutationMax);
+}
+
+GeneticAlgorithm::GeneticAlgorithm(std::ifstream& settingsFile)
+	: GeneticAlgorithm(LoadGeneticSettings(settingsFile))
+{
+}
+
+void GeneticAlgorithm::InitializePopulationFromFile(std::ifstream& inputFile)
+{
+	if (inputFile)
+	{
+		LoadGeneration(inputFile);
+	}
+	else
+	{
+		throw std::exception("input vector is not valid");
+	}
 }
 
 void GeneticAlgorithm::InitializeExistingPopulation(const std::vector<NeuralNetwork>& initialPopulation)
@@ -46,6 +63,7 @@ void GeneticAlgorithm::InitializeNewPopulation(const NeuralNetwork& networkTempl
 void GeneticAlgorithm::Run()
 {
 	PrepOutputFolder();
+	SaveGeneticSettings();
 
 	float totalTime{};
 	Timer timer{};
@@ -97,12 +115,13 @@ void GeneticAlgorithm::Run()
 
 void GeneticAlgorithm::SaveGeneration()
 {
-	
+
 	std::stringstream ss{};
 	ss << m_OutputPath << "/Generation-" << m_GenerationCounter << ".txt";
 	std::ofstream out{ ss.str() };
 
 	SaveGeneration(out);
+	out.close();
 }
 
 void GeneticAlgorithm::PrepOutputFolder()
@@ -114,6 +133,50 @@ void GeneticAlgorithm::PrepOutputFolder()
 	std::filesystem::create_directories(path);
 
 	m_OutputPath = path;
+}
+
+void GeneticAlgorithm::SaveGeneticSettings()
+{
+	std::stringstream ss{};
+	ss << m_OutputPath << "/GA-Settings.txt";
+	std::ofstream out{ ss.str() };
+
+	out << m_Settings.PopulationName << ' '
+		<< m_Settings.maxGenerations << ' '
+		<< m_Settings.threads << ' '
+		<< m_Settings.saveFrequency << ' '
+		<< m_Settings.gamesPlayed << ' '
+		<< m_Settings.minMaxDepth << ' '
+		<< m_Settings.elitismSize << ' '
+		<< m_Settings.mutationChance << ' '
+		<< m_Settings.mutationDeviation << ' '
+		<< m_Settings.mutationMax << ' ';
+}
+
+GeneticSettings GeneticAlgorithm::LoadGeneticSettings(std::ifstream& settingsFile)
+{
+	if (settingsFile)
+	{
+
+		GeneticSettings settings{};
+
+		settingsFile >> settings.PopulationName;
+		settingsFile >> settings.maxGenerations;
+		settingsFile >> settings.threads;
+		settingsFile >> settings.saveFrequency;
+		settingsFile >> settings.gamesPlayed;
+		settingsFile >> settings.minMaxDepth;
+		settingsFile >> settings.elitismSize;
+		settingsFile >> settings.mutationChance;
+		settingsFile >> settings.mutationDeviation;
+		settingsFile >> settings.mutationMax;
+
+		return settings;
+	}
+	else
+	{
+		throw std::exception("input file does not exist");
+	}
 }
 
 void GeneticAlgorithm::SaveGeneration(std::ostream& out)

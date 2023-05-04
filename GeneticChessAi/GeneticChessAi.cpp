@@ -60,8 +60,8 @@ int main(int, char**)
 
 	*/
 
-	
 
+	
 	GeneticSettings settings{};
 	settings.maxGenerations = 100;
 	settings.gamesPlayed = 2;
@@ -72,11 +72,17 @@ int main(int, char**)
 	GeneticAlgorithm ga{ settings };
 
 	//NeuralNetwork nnTemplate{ {{ 768, ActivationFunc::None}, {128, ActivationFunc::ReLU}, {32, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
-	NeuralNetwork nnTemplate{ {{768, ActivationFunc::None}, {32, ActivationFunc::ReLU}, {16, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
+	NeuralNetwork nnTemplate{ {{768, ActivationFunc::None}, {2, ActivationFunc::ReLU}, {2, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
 	ga.InitializeNewPopulation(nnTemplate, 10, 0.5f, 0.5f);
 	ga.Run();
 	
 
+	
+ 	std::ifstream inputSettings{ "GA-Output/testGen/GA-Settings.txt" };
+	GeneticAlgorithm loadedGA{ inputSettings };
+	std::ifstream inputPopulation{ "GA-Output/testGen/Generation-100.txt" };
+	loadedGA.InitializePopulationFromFile(inputPopulation);
+	
+	std::cout << "done";
+
 }
-
-

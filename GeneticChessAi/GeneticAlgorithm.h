@@ -32,13 +32,16 @@ class GeneticAlgorithm
 
 public:
 	GeneticAlgorithm(const GeneticSettings& settings);
+	GeneticAlgorithm(std::ifstream& settingsFile);
 
+	void InitializePopulationFromFile(std::ifstream& inputFile);
 	void InitializeExistingPopulation(const std::vector<NeuralNetwork>& initialPopulation);
 	void InitializeNewPopulation(const NeuralNetwork& networkTemplate, int populationSize, float weightInitRange, float biasInitRange);
 
 	void Run();
 
 	void SaveGeneration();
+	void SaveGeneticSettings();
 
 private:
 
@@ -85,6 +88,8 @@ private:
 	IndividualPtr PickIndividual();
 
 	void PrepOutputFolder();
+
+	GeneticSettings LoadGeneticSettings(std::ifstream& settingsFile);
 
 	void SaveGeneration(std::ostream& out);
 	void LoadGeneration(std::istream& in);
