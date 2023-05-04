@@ -27,6 +27,8 @@ public:
 	thc::DRAWTYPE GetDrawState() { return m_DrawState; };
 	GameResult GetGameResult();
 
+	std::string GameStateDebugStr();
+
 	std::string GetMovesRecord();
 
 

@@ -16,7 +16,7 @@ struct GeneticSettings
 	//selection
 	int gamesPlayed = 10;
 	int minMaxDepth = 2;
-	//int elitismSize = 0;
+	int elitismSize = 0;
 
 	//crossover
 
@@ -45,6 +45,10 @@ private:
 		std::unique_ptr<NeuralNetwork> pNetwork;
 		float fitness;
 		float weight;
+		int id;
+		int wins = 0;
+		int draws = 0;
+		int losses = 0;
 	};
 	using IndividualPtr = std::shared_ptr<Individual>;
 

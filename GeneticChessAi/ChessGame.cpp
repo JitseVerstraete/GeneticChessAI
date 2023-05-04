@@ -116,6 +116,11 @@ GameResult ChessGame::GetGameResult()
 	return GameResult::NoResult;
 }
 
+std::string ChessGame::GameStateDebugStr()
+{
+	return m_pPosition.ToDebugStr();
+}
+
 std::string ChessGame::GetMovesRecord()
 {
 	std::string gameString{};

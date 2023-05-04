@@ -7,7 +7,7 @@
 #include "Timer.h"
 #include <thread>
 #include <future>
-
+#include <algorithm>
 
 
 GeneticAlgorithm::GeneticAlgorithm(const GeneticSettings& settings)
@@ -20,9 +20,10 @@ GeneticAlgorithm::GeneticAlgorithm(const GeneticSettings& settings)
 
 void GeneticAlgorithm::InitializeExistingPopulation(const std::vector<NeuralNetwork>& initialPopulation)
 {
+	int id{};
 	for (const NeuralNetwork& nn : initialPopulation)
 	{
-		m_Individuals.push_back(std::make_shared<GeneticAlgorithm::Individual>(GeneticAlgorithm::Individual(std::make_unique<NeuralNetwork>(nn), 0.f, 0.f)));
+		m_Individuals.push_back(std::make_shared<GeneticAlgorithm::Individual>(GeneticAlgorithm::Individual(std::make_unique<NeuralNetwork>(nn), 0.f, 0.f, id++)));
 	}
 }
 
@@ -33,7 +34,7 @@ void GeneticAlgorithm::InitializeNewPopulation(const NeuralNetwork& networkTempl
 		NeuralNetwork nn = networkTemplate;
 		nn.InitWeightsRandom(-std::abs(weightInitRange), std::abs(weightInitRange));
 		nn.InitBiasesRandom(-std::abs(biasInitRange), std::abs(biasInitRange));
-		m_Individuals.push_back(std::make_shared<GeneticAlgorithm::Individual>(GeneticAlgorithm::Individual(std::make_unique<NeuralNetwork>(nn), 0.f, 0.f)));
+		m_Individuals.push_back(std::make_shared<GeneticAlgorithm::Individual>(GeneticAlgorithm::Individual(std::make_unique<NeuralNetwork>(nn), 0.f, 0.f, i)));
 	}
 
 }
@@ -51,14 +52,22 @@ void GeneticAlgorithm::Run()
 		std::cout << "Fitness evaluation time: " << timer.GetDuration<std::milli>() << "ms" << std::endl;
 		totalTime += timer.GetDuration<std::milli>();
 
+		auto greaterIndividual = [](const IndividualPtr& first, const IndividualPtr& second)
+		{
+			return (first->fitness > second->fitness);
+		};
+
+		//sort individuals to get the best in front
+		std::partial_sort(m_Individuals.begin(), m_Individuals.begin() + m_Settings.elitismSize, m_Individuals.end(), greaterIndividual);
 
 		//select partents
 		std::vector<std::pair<IndividualPtr, IndividualPtr>> parents = SelectParents();
 
-		for (int i{}; i < parents.size(); ++i)
+		for (int i{ m_Settings.elitismSize }; i < m_Individuals.size(); ++i)
 		{
+			int parentIndex = i - m_Settings.elitismSize;
 			//create new child through crossover
-			auto child = Crossover(parents[i].first->pNetwork.get(), parents[i].second->pNetwork.get());
+			auto child = Crossover(parents[parentIndex].first->pNetwork.get(), parents[parentIndex].second->pNetwork.get());
 			//mutate the values of the child
 			Mutate(child);
 
@@ -80,6 +89,9 @@ void GeneticAlgorithm::ResetFitness()
 	{
 		individual->fitness = 0.f;
 		individual->weight = 0.f;
+		individual->wins = 0;
+		individual->draws = 0;
+		individual->losses = 0;
 	}
 }
 
@@ -96,9 +108,7 @@ GeneticAlgorithm::GameRecord GeneticAlgorithm::PlayGame(IndividualPtr pWhite, In
 	ChessGame game = ChessGame(&wPlayer, &bPlayer, false);
 	game.PlayGame();
 
-
 	record.result = game.GetGameResult();
-
 	return record;
 }
 
@@ -118,32 +128,32 @@ void GeneticAlgorithm::EvaluateFitness()
 {
 	ResetFitness();
 
-
 	//create matches, first is white, black is second
 	std::vector< std::vector<std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>>>> gamePairings(m_Settings.threads);
 
+	//shuffle individuals
+	std::random_device rd{};
+	auto rng = std::default_random_engine{ rd() };
+	std::shuffle(m_Individuals.begin(), m_Individuals.end(), rng);
+
+
 	for (int playerIndex{}; playerIndex < m_Individuals.size(); playerIndex++)
 	{
-		for (int gameNr{}; gameNr < m_Settings.gamesPlayed;)
+		for (int gameNr{}; gameNr < m_Settings.gamesPlayed; gameNr++)
 		{
 			int gameIndex = gameNr + (playerIndex * m_Settings.gamesPlayed);
 
-			int opponentIndex = rand() % m_Individuals.size();
+			int opponentIndex = (playerIndex + (gameNr + 1)) % m_Individuals.size();
 
-			if (playerIndex != opponentIndex)
-			{
-				std::shared_ptr<Individual> player{ m_Individuals[playerIndex] };
-				std::shared_ptr<Individual>  opponent{ m_Individuals[opponentIndex] };
-				auto gamePair = (gameNr < m_Settings.gamesPlayed / 2) ?
-					std::pair(std::shared_ptr<Individual>(player), std::shared_ptr<Individual>(opponent)) :
-					std::pair(std::shared_ptr<Individual>(opponent), std::shared_ptr<Individual>(player));
+			//create pair
+			std::shared_ptr<Individual> player{ m_Individuals[playerIndex] };
+			std::shared_ptr<Individual>  opponent{ m_Individuals[opponentIndex] };
+			auto gamePair = (gameNr < m_Settings.gamesPlayed / 2) ?
+				std::pair(std::shared_ptr<Individual>(player), std::shared_ptr<Individual>(opponent)) :
+				std::pair(std::shared_ptr<Individual>(opponent), std::shared_ptr<Individual>(player));
 
-				//put the pairings in separate lists according to how many threads are used
-				gamePairings[gameIndex % m_Settings.threads].push_back(gamePair);
-
-				//only increment the game nr if a match was successfully created
-				gameNr++;
-			}
+			//put the pairings in separate lists according to how many threads are used
+			gamePairings[gameIndex % m_Settings.threads].push_back(gamePair);
 		}
 	}
 
@@ -166,12 +176,18 @@ void GeneticAlgorithm::EvaluateFitness()
 			case GameResult::Draw:
 				record.pWhite->fitness += 0.5f;
 				record.pBlack->fitness += 0.5f;
+				record.pWhite->draws++;
+				record.pBlack->draws++;
 				break;
 			case GameResult::WhiteWin:
 				record.pWhite->fitness += 1.f;
+				record.pWhite->wins++;
+				record.pBlack->losses++;
 				break;
 			case GameResult::BlackWin:
 				record.pBlack->fitness += 1.f;
+				record.pWhite->losses++;
+				record.pBlack->wins++;
 				break;
 			case GameResult::NoResult:
 				assert(false && "it should be impossible for the game to have no result after playing!");
@@ -199,12 +215,10 @@ std::vector<std::pair<GeneticAlgorithm::IndividualPtr, GeneticAlgorithm::Individ
 		ind->weight = ind->fitness / totalFitness;
 	}
 
-
-
 	IndividualPtr pParent1{};
 	IndividualPtr pParent2{};
 
-	while (parents.size() < m_Individuals.size())
+	while (parents.size() < m_Individuals.size() - m_Settings.elitismSize)
 	{
 		do
 		{
