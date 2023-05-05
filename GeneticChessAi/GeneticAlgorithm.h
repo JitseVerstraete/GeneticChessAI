@@ -52,7 +52,7 @@ public:
 
 	void Run();
 
-	const std::vector<individualPtr>& GetIndividuals();
+	const std::vector<IndividualPtr>& GetIndividuals();
 
 	void SaveGeneration();
 	void SaveGeneticSettings();

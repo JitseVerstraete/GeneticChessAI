@@ -62,8 +62,10 @@ void GeneticAlgorithm::InitializeNewPopulation(const NeuralNetwork& networkTempl
 
 void GeneticAlgorithm::Run()
 {
+	m_GenerationCounter = 0;
 	PrepOutputFolder();
 	SaveGeneticSettings();
+	SaveGeneration();
 
 	float totalTime{};
 	Timer timer{};
