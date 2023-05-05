@@ -65,11 +65,6 @@ void GeneticAlgorithm::Run()
 	PrepOutputFolder();
 	SaveGeneticSettings();
 
-	auto greaterFitness = [](const IndividualPtr& first, const IndividualPtr& second)
-	{
-		return (first->fitness > second->fitness);
-	};
-
 	float totalTime{};
 	Timer timer{};
 	for (m_GenerationCounter = 0; m_GenerationCounter < m_Settings.maxGenerations; ++m_GenerationCounter)
@@ -81,10 +76,13 @@ void GeneticAlgorithm::Run()
 		std::cout << "Fitness evaluation time: " << timer.GetDuration<std::milli>() << "ms" << std::endl;
 		totalTime += timer.GetDuration<std::milli>();
 
-
+		auto greaterIndividual = [](const IndividualPtr& first, const IndividualPtr& second)
+		{
+			return (first->fitness > second->fitness);
+		};
 
 		//sort individuals to get the best in front
-		std::partial_sort(m_Individuals.begin(), m_Individuals.begin() + m_Settings.elitismSize, m_Individuals.end(), greaterFitness);
+		std::partial_sort(m_Individuals.begin(), m_Individuals.begin() + m_Settings.elitismSize, m_Individuals.end(), greaterIndividual);
 
 		//select partents
 		std::vector<std::pair<IndividualPtr, IndividualPtr>> parents = SelectParents();
@@ -111,13 +109,7 @@ void GeneticAlgorithm::Run()
 		std::cout << "DONE" << std::endl << std::endl;;
 	}
 
-	std::cout << "FINAL FITNESS SORTING\n";
-	EvaluateFitness();
-
-	std::sort(m_Individuals.begin(), m_Individuals.end(), greaterFitness);
-
 	SaveGeneration();
-	std::cout << "TRAINING TIME\n";
 	std::cout << "Avg fitness time (" << m_Settings.threads << " threads): " << totalTime / m_Settings.maxGenerations << " ms" << std::endl;
 }
 
