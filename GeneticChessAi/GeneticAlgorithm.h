@@ -29,22 +29,6 @@ struct GeneticSettings
 
 class GeneticAlgorithm
 {
-
-public:
-	GeneticAlgorithm(const GeneticSettings& settings);
-	GeneticAlgorithm(std::ifstream& settingsFile);
-
-	void InitializePopulationFromFile(std::ifstream& inputFile);
-	void InitializeExistingPopulation(const std::vector<NeuralNetwork>& initialPopulation);
-	void InitializeNewPopulation(const NeuralNetwork& networkTemplate, int populationSize, float weightInitRange, float biasInitRange);
-
-	void Run();
-
-	void SaveGeneration();
-	void SaveGeneticSettings();
-
-private:
-
 	//structs
 	struct Individual
 	{
@@ -57,6 +41,25 @@ private:
 		int losses = 0;
 	};
 	using IndividualPtr = std::shared_ptr<Individual>;
+
+public:
+	GeneticAlgorithm(const GeneticSettings& settings);
+	GeneticAlgorithm(std::ifstream& settingsFile);
+
+	void InitializePopulationFromFile(std::ifstream& inputFile);
+	void InitializeExistingPopulation(const std::vector<NeuralNetwork>& initialPopulation);
+	void InitializeNewPopulation(const NeuralNetwork& networkTemplate, int populationSize, float weightInitRange, float biasInitRange);
+
+	void Run();
+
+	const std::vector<individualPtr>& GetIndividuals();
+
+	void SaveGeneration();
+	void SaveGeneticSettings();
+
+private:
+
+
 
 	//variables
 	GeneticSettings m_Settings;

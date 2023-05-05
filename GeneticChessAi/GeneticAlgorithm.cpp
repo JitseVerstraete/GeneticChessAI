@@ -113,6 +113,11 @@ void GeneticAlgorithm::Run()
 	std::cout << "Avg fitness time (" << m_Settings.threads << " threads): " << totalTime / m_Settings.maxGenerations << " ms" << std::endl;
 }
 
+const std::vector<GeneticAlgorithm::IndividualPtr>& GeneticAlgorithm::GetIndividuals()
+{
+	return m_Individuals;
+}
+
 void GeneticAlgorithm::SaveGeneration()
 {
 
