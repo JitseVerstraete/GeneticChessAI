@@ -843,6 +843,9 @@ static uint64_t hash64_lookup[64]['r' - 'B' + 1] =
 	}
 };
 
+static uint32_t m_whiteToPlayHash32 = 0xcc9b322b;
+static uint64_t m_whiteToPlayHash64 = 0x9d5890fe1cb961ee;
+
 
 /****************************************************************************
  * ChessPosition.cpp Chess classes - Representation of the position on the board
@@ -1755,6 +1758,11 @@ uint32_t ChessPosition::HashCalculate()
 			c = 'a';
 		hash ^= hash_lookup[i][c - 'B'];
 	}
+
+	if (white)
+	{
+		hash ^= m_whiteToPlayHash32;
+	}
 	return hash;
 }
 
@@ -1917,6 +1925,7 @@ uint32_t ChessPosition::HashUpdate(uint32_t hash_in, Move move)
 		break;
 	}
 	}
+	hash ^= m_whiteToPlayHash32;
 	return hash;
 }
 
@@ -1935,6 +1944,10 @@ uint64_t ChessPosition::Hash64Calculate()
 		else if (c > 'r')
 			c = 'a';
 		hash ^= hash64_lookup[i][c - 'B'];
+	}
+	if (white)
+	{
+		hash ^= m_whiteToPlayHash64;
 	}
 	return hash;
 }
@@ -2097,6 +2110,8 @@ uint64_t ChessPosition::Hash64Update(uint64_t hash_in, Move move)
 		break;
 	}
 	}
+
+	hash ^= m_whiteToPlayHash64;
 	return hash;
 }
 
