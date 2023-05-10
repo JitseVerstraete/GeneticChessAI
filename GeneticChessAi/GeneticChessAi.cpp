@@ -34,6 +34,9 @@ using Eigen::VectorXf;
 int main(int, char**)
 {
 
+
+
+	//WRITE SOME NN TO FILE (TEST)
 	/*
 	for (int i{}; i < 10; i++)
 	{
@@ -49,8 +52,8 @@ int main(int, char**)
 	}
 	*/
 
-
-	
+	//READ SOME NN FROM FILE (TEST)
+	/*
 	for (int i{}; i < 10; i++)
 	{
 
@@ -83,12 +86,13 @@ int main(int, char**)
 		std::cout << "transpositions found:" << player.TranspositionCount() << std::endl;
 		std::cout << "average move time: " << totalTime / 50 << "ms\n" << std::endl;
 	}
+	*/
 	
 
 
 
 
-
+	//HASH TEST
 	/*
 	{
 
@@ -215,29 +219,33 @@ int main(int, char**)
 	*/
 
 
-	/*
+	
 	GeneticSettings settings{};
-	settings.maxGenerations = 100;
-	settings.gamesPlayed = 2;
-	settings.threads = 12;
-	settings.elitismSize = 3;
-	settings.saveFrequency = 9;
 	settings.PopulationName = "testGen";
+
+	settings.maxGenerations = 100;
+	settings.threads = 12;
+	settings.saveFrequency = 10;
+
+	settings.gamesPlayed = 4; //every player will end up playing 10 games, because 5 opponents will challenge them
+	settings.minMaxDepth = 3;
+	settings.elitismSize = 3;
+	settings.ttSize = 1'000'000; //24MB per player * 24max players at any time = 576MB maximum
+
+	settings.mutationChance = 0.05f;
+	settings.mutationDeviation = 0.5f;
+
+
 	GeneticAlgorithm ga{ settings };
 
-	//NeuralNetwork nnTemplate{ {{ 768, ActivationFunc::None}, {128, ActivationFunc::ReLU}, {32, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
-	NeuralNetwork nnTemplate{ {{768, ActivationFunc::None}, {2, ActivationFunc::ReLU}, {2, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
-	ga.InitializeNewPopulation(nnTemplate, 10, 0.5f, 0.5f);
+	NeuralNetwork nnTemplate{ {{768, ActivationFunc::None}, {64, ActivationFunc::ReLU}, {16, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
+	ga.InitializeNewPopulation(nnTemplate, 50, 0.5f, 0.5f);
+
+
+	Timer timer{};
 	ga.Run();
+	std::cout << std::endl << "total training time: " << timer.GetDuration<std::milli>() << "ms\n";
 
-
-
-	std::ifstream inputSettings{ "GA-Output/testGen/GA-Settings.txt" };
-	GeneticAlgorithm loadedGA{ inputSettings };
-	std::ifstream inputPopulation{ "GA-Output/testGen/Generation-100.txt" };
-	loadedGA.InitializePopulationFromFile(inputPopulation);
-
-	std::cout << "done";
-	*/
+	 
 
 }

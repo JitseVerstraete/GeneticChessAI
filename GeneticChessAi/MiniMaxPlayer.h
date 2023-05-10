@@ -55,7 +55,7 @@ MiniMaxPlayer<Eval>::MiniMaxPlayer(int depth, const Eval& eval, size_t transposi
 template <typename Eval>
 thc::Move MiniMaxPlayer<Eval>::MakeMove(thc::ChessRules& position)
 {
-	m_tt.Clear();
+	//m_tt.Clear();
 	m_leafNodeCounter = 0;
 	m_TranspositionsFound = 0;
 	bool maximize = position.WhiteToPlay();
