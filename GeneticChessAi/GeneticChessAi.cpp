@@ -33,39 +33,59 @@ using Eigen::VectorXf;
 
 int main(int, char**)
 {
+
 	/*
+	for (int i{}; i < 10; i++)
+	{
 		//generate and save new neural network
 		NeuralNetwork nn{ {{ 768, ActivationFunc::None}, {64, ActivationFunc::ReLU}, {16, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
 		nn.InitBiasesRandom(-0.5f, 0.5f);
 		nn.InitWeightsRandom(-0.5f, 0.5f);
-
-		std::ofstream file{ "testnn.txt" };
+		std::string fileName = "testnn";
+		fileName.append(std::to_string(i));
+		fileName.append(".txt");
+		std::ofstream file{ fileName};
 		nn.Save(file);
-	*/
-	
-	//do timings on the playing of 1 move
-	thc::ChessRules pos{};
-	pos.Forsyth("2kr3r/ppp1ppbp/2n1qnp1/1N3b2/8/1P1B1N2/PBPPQPPP/R4RK1 b - - 5 10");
-
-	std::ifstream file{ "testnn.txt" };
-	NeuralNetwork nn = NeuralNetwork::Load(file);
-
-
-	NNEval eval{ &nn };
-	MiniMaxPlayer<NNEval> player{ 4, eval, 1'000'000 };
-
-	float totalTime{};
-	for (int i{}; i < 100; i++)
-	{
-		Timer timer{};
-		std::cout << player.MakeMove(pos).NaturalOut(&pos) << std::endl;
-		totalTime += timer.GetDuration<std::milli>();
-		std::cout << "nodes evaluated:" << player.LeafNodeCount() << std::endl;
 	}
-	std::cout << std::endl << "average move time: " << totalTime / 100 << "ms\n";
+	*/
+
 
 	
+	for (int i{}; i < 10; i++)
+	{
+
+		//do timings on the playing of 1 move
+		thc::ChessRules pos{};
+		pos.Forsyth("2kr3r/ppp1ppbp/2n1qnp1/1N3b2/8/1P1B1N2/PBPPQPPP/R4RK1 b - - 5 10");
+
+		std::string fileName = "testnn";
+		fileName.append(std::to_string(i));
+		fileName.append(".txt");
+
+		std::ifstream file{ fileName };
+		NeuralNetwork nn = NeuralNetwork::Load(file);
+
+
+		NNEval eval{ &nn };
+		MiniMaxPlayer<NNEval> player{ 4, eval, 1'000'000 };
+		thc::Move move{};
+
+		float totalTime{};
+		for (int i{}; i < 50; i++)
+		{
+			Timer timer{};
+			move = player.MakeMove(pos);
+			totalTime += timer.GetDuration<std::milli>();
+
+		}
+		std::cout << "Move Played: " << move.NaturalOut(&pos) << std::endl;
+		std::cout << "nodes evaluated:" << player.LeafNodeCount() << std::endl;
+		std::cout << "transpositions found:" << player.TranspositionCount() << std::endl;
+		std::cout << "average move time: " << totalTime / 50 << "ms\n" << std::endl;
+	}
 	
+
+
 
 
 

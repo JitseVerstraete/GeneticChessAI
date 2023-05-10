@@ -104,9 +104,6 @@
     <ClInclude Include="ActivationFunctions.h">
       <Filter>NeuralNet</Filter>
     </ClInclude>
-    <ClInclude Include="MoveOrdering.h">
-      <Filter>main</Filter>
-    </ClInclude>
     <ClInclude Include="GeneticAlgorithm.h">
       <Filter>GeneticAlgorithm</Filter>
     </ClInclude>
@@ -114,6 +111,9 @@
       <Filter>Timer</Filter>
     </ClInclude>
     <ClInclude Include="TranspositionTable.h">
+      <Filter>ChessHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveOrdering.h">
       <Filter>ChessHelpers</Filter>
     </ClInclude>
   </ItemGroup>

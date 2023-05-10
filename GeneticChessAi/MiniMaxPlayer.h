@@ -23,6 +23,7 @@ public:
 	~MiniMaxPlayer() = default;
 
 	int LeafNodeCount() { return m_leafNodeCounter; }
+	int TranspositionCount() { return m_TranspositionsFound; }
 	virtual thc::Move MakeMove(thc::ChessRules& position) override;
 
 
@@ -34,6 +35,7 @@ private:
 	TranspositionTable m_tt;
 
 	int m_leafNodeCounter{};
+	int m_TranspositionsFound{};
 
 	const float m_MateScore = 1'000'000.f;
 
@@ -55,6 +57,7 @@ thc::Move MiniMaxPlayer<Eval>::MakeMove(thc::ChessRules& position)
 {
 	m_tt.Clear();
 	m_leafNodeCounter = 0;
+	m_TranspositionsFound = 0;
 	bool maximize = position.WhiteToPlay();
 	thc::ChessRules positionCopy = position;
 
@@ -105,44 +108,15 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 		return MoveValue(thc::Move(), m_EvalFunction(position));
 	}
 
-
-	
 	//check the transposition table
 	TTEntry entry = m_tt.GetEntryAtHash(hash);
-
-
 	if (entry.valid && entry.key == hash && entry.searchDepth >= depth)
 	{
-		switch (entry.type)
-		{
-		case EntryType::Exact:
-			//std::cout << "found an exact value node\n";
-			//return MoveValue(entry.move, entry.value);
-			break;
 
-		case EntryType::MaxNode:
-			//if (maximizingPlayer)
-			
-				std::cout << "found a beta cutoff node (max node)\n";
-			
-			break;
-
-		case EntryType::MinNode:
-			//if (!maximizingPlayer)
-			
-				std::cout << "found a alpha cutoff node (min node)\n";
-			
-			break;
-
-		default:
-			break;
-		}
-
+		//std::cout << "found an exact value node\n";
+		m_TranspositionsFound++;
+		return MoveValue(entry.move, entry.value);
 	}
-	
-	
-	
-
 
 
 	MoveValue bestMove{};
@@ -171,16 +145,9 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 			alpha = std::max(alpha, bestMove.value);
 			if (bestMove.value >= beta)
 			{
-				//todo: transposition table value is max-type (value of this pos is at least this evaluation)
-				m_tt.StoreEvaluation(hash, bestMove.value, bestMove.move, depth, EntryType::MaxNode);
 				break;
 			}
-
 		}
-
-		//the entire subtree is evaluated: so you can store this as an exact transposition record
-		m_tt.StoreEvaluation(hash, bestMove.value, bestMove.move, depth, EntryType::Exact);
-
 	}
 	else //minimizing
 	{
@@ -202,16 +169,12 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 			beta = std::min(beta, bestMove.value);
 			if (bestMove.value <= alpha)
 			{
-				//todo: transposition table value is min-type (value of this pos is at most this evaluation)
-				m_tt.StoreEvaluation(hash, bestMove.value, bestMove.move, depth, EntryType::MinNode);
 				break;
 			}
 		}
-		//the entire subtree is evaluated: so you can store this as an exact transposition record
-		m_tt.StoreEvaluation(hash, bestMove.value, bestMove.move, depth, EntryType::Exact);
 	}
 
-
+	m_tt.StoreEvaluation(hash, bestMove.value, bestMove.move, depth);
 
 
 	return bestMove;
