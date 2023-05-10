@@ -16,9 +16,6 @@
     <Filter Include="ChessGame">
       <UniqueIdentifier>{175e1dc7-c2a3-4a7c-b5eb-86d1f02c5bb5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Helpers">
-      <UniqueIdentifier>{c7002abb-8063-4337-af59-c74de7b6d554}</UniqueIdentifier>
-    </Filter>
     <Filter Include="NeuralNet">
       <UniqueIdentifier>{680a42f2-41f6-404a-b79c-821b344542ab}</UniqueIdentifier>
     </Filter>
@@ -27,6 +24,9 @@
     </Filter>
     <Filter Include="Timer">
       <UniqueIdentifier>{33491bec-8ae5-4d17-976f-a3d4c26a515c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ChessHelpers">
+      <UniqueIdentifier>{c7002abb-8063-4337-af59-c74de7b6d554}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -52,10 +52,10 @@
       <Filter>ChessPlayer</Filter>
     </ClCompile>
     <ClCompile Include="EvalFunctions.cpp">
-      <Filter>Helpers</Filter>
+      <Filter>ChessHelpers</Filter>
     </ClCompile>
     <ClCompile Include="MoveOrdering.cpp">
-      <Filter>Helpers</Filter>
+      <Filter>ChessHelpers</Filter>
     </ClCompile>
     <ClCompile Include="NeuralNetwork.cpp">
       <Filter>NeuralNet</Filter>
@@ -68,6 +68,9 @@
     </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="TranspositionTable.cpp">
+      <Filter>ChessHelpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -93,7 +96,7 @@
       <Filter>ChessPlayer</Filter>
     </ClInclude>
     <ClInclude Include="EvalFunctions.h">
-      <Filter>Helpers</Filter>
+      <Filter>ChessHelpers</Filter>
     </ClInclude>
     <ClInclude Include="NeuralNetwork.h">
       <Filter>NeuralNet</Filter>
@@ -109,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="TranspositionTable.h">
+      <Filter>ChessHelpers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

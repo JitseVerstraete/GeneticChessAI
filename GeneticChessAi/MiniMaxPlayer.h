@@ -5,6 +5,8 @@
 #include <iostream>
 #include "MoveOrdering.h"
 #include "EvalFunctions.h"
+#include "TranspositionTable.h"
+
 
 struct MoveValue
 {
@@ -17,7 +19,7 @@ template <typename Eval>
 class MiniMaxPlayer final : public ChessPlayer
 {
 public:
-	MiniMaxPlayer(int depth, const Eval& eval);
+	MiniMaxPlayer(int depth, const Eval& eval, size_t transpositionSize);
 	~MiniMaxPlayer() = default;
 
 	int LeafNodeCount() { return m_leafNodeCounter; }
@@ -27,8 +29,9 @@ public:
 private:
 	int m_depth;
 	Eval m_EvalFunction;
-	MoveValue MiniMax(thc::ChessRules& position, int depth, float alpha, float beta, bool maximizingPlayer);
+	MoveValue MiniMax(thc::ChessRules& position, int depth, float alpha, float beta, bool maximizingPlayer, uint64_t hash);
 
+	TranspositionTable m_tt;
 
 	int m_leafNodeCounter{};
 
@@ -38,9 +41,10 @@ private:
 
 
 template <typename Eval>
-MiniMaxPlayer<Eval>::MiniMaxPlayer(int depth, const Eval& eval)
+MiniMaxPlayer<Eval>::MiniMaxPlayer(int depth, const Eval& eval, size_t transpositionSize)
 	:m_depth{ depth },
-	m_EvalFunction{ eval }
+	m_EvalFunction{ eval },
+	m_tt{ transpositionSize }
 {
 	//depth has to be at least one
 	m_depth = std::max(m_depth, 1);
@@ -49,18 +53,20 @@ MiniMaxPlayer<Eval>::MiniMaxPlayer(int depth, const Eval& eval)
 template <typename Eval>
 thc::Move MiniMaxPlayer<Eval>::MakeMove(thc::ChessRules& position)
 {
+	m_tt.Clear();
 	m_leafNodeCounter = 0;
 	bool maximize = position.WhiteToPlay();
 	thc::ChessRules positionCopy = position;
 
-	MoveValue bestMove = MiniMax(positionCopy, m_depth, -FLT_MAX, FLT_MAX, maximize);
+	uint64_t hash = positionCopy.Hash64Calculate();
+	MoveValue bestMove = MiniMax(positionCopy, m_depth, -FLT_MAX, FLT_MAX, maximize, hash);
 	return bestMove.move;
 }
 
 
 
 template<typename Eval>
-MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, float alpha, float beta, bool maximizingPlayer)
+MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, float alpha, float beta, bool maximizingPlayer, uint64_t hash)
 {
 	thc::TERMINAL terminal{};
 	thc::DRAWTYPE draw{};
@@ -100,16 +106,50 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 	}
 
 
+	
+	//check the transposition table
+	TTEntry entry = m_tt.GetEntryAtHash(hash);
+
+
+	if (entry.valid && entry.key == hash && entry.searchDepth >= depth)
+	{
+		switch (entry.type)
+		{
+		case EntryType::Exact:
+			//std::cout << "found an exact value node\n";
+			//return MoveValue(entry.move, entry.value);
+			break;
+
+		case EntryType::MaxNode:
+			//if (maximizingPlayer)
+			
+				std::cout << "found a beta cutoff node (max node)\n";
+			
+			break;
+
+		case EntryType::MinNode:
+			//if (!maximizingPlayer)
+			
+				std::cout << "found a alpha cutoff node (min node)\n";
+			
+			break;
+
+		default:
+			break;
+		}
+
+	}
+	
+	
+	
+
+
+
 	MoveValue bestMove{};
 	std::vector<thc::Move> moves{};
-	//std::vector<bool> checks{};
-	//std::vector<bool> mates{};
-	//std::vector<bool> stalemates{};
 	position.GenLegalMoveList(moves);
 
 	OrderMoves(moves, position);
-
-
 
 	if (maximizingPlayer)
 	{
@@ -118,8 +158,10 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 
 		for (thc::Move move : moves)
 		{
+			uint64_t updatedHash = position.Hash64Update(hash, move);
 			position.PlayMove(move);
-			float score = MiniMax(position, depth - 1, alpha, beta, false).value;
+			assert(updatedHash == position.Hash64Calculate() && "the updated hash match the calculated one");
+			float score = MiniMax(position, depth - 1, alpha, beta, false, updatedHash).value;
 			position.UnplayMove(move);
 			if (score > bestMove.value)
 			{
@@ -129,10 +171,16 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 			alpha = std::max(alpha, bestMove.value);
 			if (bestMove.value >= beta)
 			{
+				//todo: transposition table value is max-type (value of this pos is at least this evaluation)
+				m_tt.StoreEvaluation(hash, bestMove.value, bestMove.move, depth, EntryType::MaxNode);
 				break;
 			}
 
 		}
+
+		//the entire subtree is evaluated: so you can store this as an exact transposition record
+		m_tt.StoreEvaluation(hash, bestMove.value, bestMove.move, depth, EntryType::Exact);
+
 	}
 	else //minimizing
 	{
@@ -141,8 +189,10 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 
 		for (thc::Move move : moves)
 		{
+			uint64_t updatedHash = position.Hash64Update(hash, move);
 			position.PlayMove(move);
-			float score = MiniMax(position, depth - 1, alpha, beta, true).value;
+			assert(updatedHash == position.Hash64Calculate() && "the updated hash match the calculated one");
+			float score = MiniMax(position, depth - 1, alpha, beta, true, updatedHash).value;
 			position.UnplayMove(move);
 			if (score < bestMove.value)
 			{
@@ -152,10 +202,17 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 			beta = std::min(beta, bestMove.value);
 			if (bestMove.value <= alpha)
 			{
+				//todo: transposition table value is min-type (value of this pos is at most this evaluation)
+				m_tt.StoreEvaluation(hash, bestMove.value, bestMove.move, depth, EntryType::MinNode);
 				break;
 			}
 		}
+		//the entire subtree is evaluated: so you can store this as an exact transposition record
+		m_tt.StoreEvaluation(hash, bestMove.value, bestMove.move, depth, EntryType::Exact);
 	}
+
+
+
 
 	return bestMove;
 }

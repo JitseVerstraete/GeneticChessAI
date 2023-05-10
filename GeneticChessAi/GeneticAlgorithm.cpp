@@ -234,9 +234,9 @@ GeneticAlgorithm::GameRecord GeneticAlgorithm::PlayGame(IndividualPtr pWhite, In
 	record.pWhite = pWhite;
 	record.pBlack = pBlack;
 
-
-	MiniMaxPlayer<NNEval> wPlayer{ m_Settings.minMaxDepth, NNEval(pWhite->pNetwork.get()) };
-	MiniMaxPlayer<NNEval> bPlayer{ m_Settings.minMaxDepth, NNEval(pBlack->pNetwork.get()) };
+	//todo: make genetic setting that passes tt size to the players
+	MiniMaxPlayer<NNEval> wPlayer{ m_Settings.minMaxDepth, NNEval(pWhite->pNetwork.get()), (size_t)m_Settings.ttSize };
+	MiniMaxPlayer<NNEval> bPlayer{ m_Settings.minMaxDepth, NNEval(pBlack->pNetwork.get()), (size_t)m_Settings.ttSize };
 
 	ChessGame game = ChessGame(&wPlayer, &bPlayer, false);
 	game.PlayGame();

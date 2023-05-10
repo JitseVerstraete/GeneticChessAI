@@ -17,6 +17,7 @@ struct GeneticSettings
 	//selection
 	int gamesPlayed = 10;
 	int minMaxDepth = 2;
+	int ttSize = 1'000'000;
 	int elitismSize = 0;
 
 	//crossover
