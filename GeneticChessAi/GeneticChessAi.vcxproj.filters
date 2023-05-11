@@ -72,6 +72,9 @@
     <ClCompile Include="TranspositionTable.cpp">
       <Filter>ChessHelpers</Filter>
     </ClCompile>
+    <ClCompile Include="ChessMatch.cpp">
+      <Filter>ChessHelpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdParty\ChessLibrary\thc.h">
@@ -114,6 +117,9 @@
       <Filter>ChessHelpers</Filter>
     </ClInclude>
     <ClInclude Include="MoveOrdering.h">
+      <Filter>ChessHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ChessMatch.h">
       <Filter>ChessHelpers</Filter>
     </ClInclude>
   </ItemGroup>
