@@ -57,6 +57,7 @@ public:
 
 	void SaveGeneration();
 	void SaveGeneticSettings();
+	void PrepOutputFolder();
 
 private:
 
@@ -91,7 +92,7 @@ private:
 	std::vector<std::pair<IndividualPtr, IndividualPtr>> SelectParents();
 	IndividualPtr PickIndividual();
 
-	void PrepOutputFolder();
+
 
 	GeneticSettings LoadGeneticSettings(std::ifstream& settingsFile);
 

@@ -154,10 +154,12 @@ void GeneticAlgorithm::SaveGeneticSettings()
 		<< m_Settings.saveFrequency << ' '
 		<< m_Settings.gamesPlayed << ' '
 		<< m_Settings.minMaxDepth << ' '
+		<< m_Settings.ttSize << ' '
 		<< m_Settings.elitismSize << ' '
 		<< m_Settings.mutationChance << ' '
 		<< m_Settings.mutationDeviation << ' '
 		<< m_Settings.mutationMax << ' ';
+	out.close();
 }
 
 GeneticSettings GeneticAlgorithm::LoadGeneticSettings(std::ifstream& settingsFile)
@@ -173,6 +175,7 @@ GeneticSettings GeneticAlgorithm::LoadGeneticSettings(std::ifstream& settingsFil
 		settingsFile >> settings.saveFrequency;
 		settingsFile >> settings.gamesPlayed;
 		settingsFile >> settings.minMaxDepth;
+		settingsFile >> settings.ttSize;
 		settingsFile >> settings.elitismSize;
 		settingsFile >> settings.mutationChance;
 		settingsFile >> settings.mutationDeviation;
