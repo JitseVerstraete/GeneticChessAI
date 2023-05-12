@@ -23,7 +23,7 @@
 #include <ctime>
 #include <filesystem>
 #include <bitset>
-
+#include <chrono>
 #include "TranspositionTable.h"
 
 #include <Eigen/Dense>
@@ -33,6 +33,39 @@ using Eigen::VectorXf;
 
 int main(int, char**)
 {
+
+	GeneticSettings settings{};
+	settings.PopulationName = "PopLoad";
+
+	settings.maxGenerations = 100;
+	settings.threads = 12;
+	settings.saveFrequency = 10;
+
+	settings.gamesPlayed = 4; //every player will end up playing double this, because opponents will challenge them
+	settings.minMaxDepth = 2;
+	settings.ttSize = 1'000'000; //24MB per player * 24max players at any time = 576MB maximum
+	settings.elitismSize = 3;
+
+	settings.mutationChance = 0.05f;
+	settings.mutationDeviation = 0.5f;
+
+	GeneticAlgorithm ga{ settings };
+	GeneticAlgorithm ga2{ settings };
+
+	NeuralNetwork nnTemplate{ {{768, ActivationFunc::None}, {64, ActivationFunc::ReLU}, {16, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
+	ga.InitializeNewPopulation(nnTemplate, 10, 0.5f, 0.5f);
+
+	ga.PrepOutputFolder();
+	ga.SaveGeneration();
+
+	ga2.InitializePopulationFromFile("PopLoad", 0);
+	
+
+	MatchResults result = ga.Compare(ga2, 4);
+
+	std::cout << "wins: " << result.wins << std::endl;
+	std::cout << "draws: " << result.draws << std::endl;
+	 std::cout << "losses: " << result.losses << std::endl;
 
 
 
@@ -87,7 +120,7 @@ int main(int, char**)
 		std::cout << "average move time: " << totalTime / 50 << "ms\n" << std::endl;
 	}
 	*/
-	
+
 
 
 
@@ -219,7 +252,7 @@ int main(int, char**)
 	*/
 
 
-	
+	/*
 	GeneticSettings settings{};
 	settings.PopulationName = "testGen";
 
@@ -227,8 +260,8 @@ int main(int, char**)
 	settings.threads = 12;
 	settings.saveFrequency = 10;
 
-	settings.gamesPlayed = 4; //every player will end up playing 10 games, because 5 opponents will challenge them
-	settings.minMaxDepth = 3;
+	settings.gamesPlayed = 4; //every player will end up playing double this, because opponents will challenge them
+	settings.minMaxDepth = 4;
 	settings.elitismSize = 3;
 	settings.ttSize = 1'000'000; //24MB per player * 24max players at any time = 576MB maximum
 
@@ -244,8 +277,8 @@ int main(int, char**)
 
 	Timer timer{};
 	ga.Run();
-	std::cout << std::endl << "total training time: " << timer.GetDuration<std::milli>() << "ms\n";
+	std::cout << std::endl << "total training time: " << timer.GetDuration<std::ratio<60, 1>>() << " minutes\n";
+	*/
 
-	 
 
 }

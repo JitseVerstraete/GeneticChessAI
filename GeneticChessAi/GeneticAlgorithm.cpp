@@ -12,6 +12,9 @@
 #include <filesystem>
 
 const std::string GeneticAlgorithm::m_ResultRootDir = "GA-Output";
+const std::string GeneticAlgorithm::m_SettingsFileName = "GA-Settings.txt";
+const std::string GeneticAlgorithm::m_GenerationFileName = "Generation-";
+const std::string GeneticAlgorithm::m_FileExtension = ".txt";
 
 GeneticAlgorithm::GeneticAlgorithm(const GeneticSettings& settings)
 	:m_Settings{ settings }
@@ -22,20 +25,24 @@ GeneticAlgorithm::GeneticAlgorithm(const GeneticSettings& settings)
 	m_Settings.mutationMax = std::abs(m_Settings.mutationMax);
 }
 
-GeneticAlgorithm::GeneticAlgorithm(std::ifstream& settingsFile)
-	: GeneticAlgorithm(LoadGeneticSettings(settingsFile))
+GeneticAlgorithm::GeneticAlgorithm(const std::string& generationName)
+	: GeneticAlgorithm(LoadGeneticSettings(generationName))
 {
 }
 
-void GeneticAlgorithm::InitializePopulationFromFile(std::ifstream& inputFile)
+void GeneticAlgorithm::InitializePopulationFromFile(const std::string& generationName, int generationNumber)
 {
+	std::stringstream ss{};
+	ss << m_ResultRootDir << '/' << generationName << '/' << m_GenerationFileName << generationNumber << m_FileExtension;
+	std::ifstream inputFile{ ss.str() };
+
 	if (inputFile)
 	{
 		LoadGeneration(inputFile);
 	}
 	else
 	{
-		throw std::exception("input vector is not valid");
+		throw std::exception("file does not exist");
 	}
 }
 
@@ -124,9 +131,8 @@ void GeneticAlgorithm::SaveGeneration()
 {
 
 	std::stringstream ss{};
-	ss << m_OutputPath << "/Generation-" << m_GenerationCounter << ".txt";
+	ss << m_ResultRootDir << '/' << m_Settings.PopulationName << '/' << m_GenerationFileName << m_GenerationCounter << m_FileExtension;
 	std::ofstream out{ ss.str() };
-
 	SaveGeneration(out);
 	out.close();
 }
@@ -139,13 +145,114 @@ void GeneticAlgorithm::PrepOutputFolder()
 	std::filesystem::remove_all(path);
 	std::filesystem::create_directories(path);
 
-	m_OutputPath = path;
+
+}
+
+
+
+MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayers)
+{
+	enum class Team
+	{
+		Team1,
+		Team2
+	};
+
+	MatchResults results{};
+
+
+	//compare the X best players of both generations against each other
+	EvaluateFitness();
+	other.EvaluateFitness();
+
+	auto greaterIndividual = [](const IndividualPtr& first, const IndividualPtr& second)
+	{
+		return (first->fitness > second->fitness);
+	};
+
+	//sort 
+	std::partial_sort(m_Individuals.begin(), m_Individuals.begin() + nrBestPlayers, m_Individuals.end(), greaterIndividual);
+	std::partial_sort(other.m_Individuals.begin(), other.m_Individuals.begin() + nrBestPlayers, other.m_Individuals.end(), greaterIndividual);
+
+	std::vector<std::pair<IndividualPtr, IndividualPtr>> pairings{};
+
+	//let every player from every play against every player of the other team with both white and black
+	for (int thisInd{}; thisInd < nrBestPlayers; thisInd++)
+	{
+		for (int otherInd{}; otherInd < nrBestPlayers; otherInd++)
+		{
+			//let every pairing play with black and white.
+			pairings.push_back({ m_Individuals[thisInd], other.m_Individuals[otherInd] });
+			pairings.push_back({ other.m_Individuals[otherInd], m_Individuals[thisInd] });
+		}
+	}
+
+	//play games
+	std::vector<GameRecord> records = ProcessGames(pairings);
+
+	ResetFitness();
+	other.ResetFitness();
+
+
+	//process the results
+	for (const GameRecord& record : records)
+	{
+		switch (record.result)
+		{
+		case GameResult::Draw:
+			record.pWhite->draws++;
+			record.pBlack->draws++;
+			break;
+		case GameResult::WhiteWin:
+			record.pWhite->wins++;
+			record.pBlack->losses++;
+			break;
+		case GameResult::BlackWin:
+			record.pWhite->losses++;
+			record.pBlack->wins++;
+			break;
+		case GameResult::NoResult:
+			assert(false && "it should be impossible for the game to have no result after playing!");
+			break;
+		default:
+			break;
+		}
+	}
+
+	//tally up the results
+	MatchResults cmpResults{};
+	for (int i{}; i < nrBestPlayers; i++)
+	{
+		results.wins += m_Individuals[i]->wins;
+		results.draws += m_Individuals[i]->draws;
+		results.losses += m_Individuals[i]->losses;
+
+		cmpResults.wins += other.m_Individuals[i]->wins;
+		cmpResults.draws += other.m_Individuals[i]->draws;
+		cmpResults.losses += other.m_Individuals[i]->losses;
+	}
+
+
+	std::cout << "this wins:" << results.wins << std::endl;
+	std::cout << "this draws:" << results.draws << std::endl;
+	std::cout << "this losses:" << results.losses << std::endl << std::endl;
+
+	std::cout << "other wins:" << cmpResults.wins << std::endl;
+	std::cout << "other draws:" << cmpResults.draws << std::endl;
+	std::cout << "other losses:" << cmpResults.losses << std::endl << std::endl;
+
+	std::cout << "wins match: " << std::boolalpha << (results.wins == cmpResults.losses) << std::endl;
+	std::cout << "draws match: " << std::boolalpha << (results.draws == cmpResults.draws) << std::endl;
+	std::cout << "losses match: " << std::boolalpha << (results.losses == cmpResults.wins) << std::endl << std::endl;
+
+
+	return results;
 }
 
 void GeneticAlgorithm::SaveGeneticSettings()
 {
 	std::stringstream ss{};
-	ss << m_OutputPath << "/GA-Settings.txt";
+	ss << m_ResultRootDir << '/' << m_Settings.PopulationName << '/' << m_SettingsFileName;
 	std::ofstream out{ ss.str() };
 
 	out << m_Settings.PopulationName << ' '
@@ -162,8 +269,12 @@ void GeneticAlgorithm::SaveGeneticSettings()
 	out.close();
 }
 
-GeneticSettings GeneticAlgorithm::LoadGeneticSettings(std::ifstream& settingsFile)
+GeneticSettings GeneticAlgorithm::LoadGeneticSettings(const std::string& GenerationName)
 {
+	std::stringstream ss{};
+	ss << m_ResultRootDir << '/' << GenerationName << '/' << m_SettingsFileName;
+	std::ifstream settingsFile{ ss.str() };
+
 	if (settingsFile)
 	{
 
@@ -180,6 +291,8 @@ GeneticSettings GeneticAlgorithm::LoadGeneticSettings(std::ifstream& settingsFil
 		settingsFile >> settings.mutationChance;
 		settingsFile >> settings.mutationDeviation;
 		settingsFile >> settings.mutationMax;
+
+		settingsFile.close();
 
 		return settings;
 	}

@@ -28,6 +28,13 @@ struct GeneticSettings
 	float mutationMax = FLT_MAX;
 };
 
+struct MatchResults
+{
+	int wins;
+	int draws;
+	int losses;
+};
+
 class GeneticAlgorithm
 {
 	//structs
@@ -45,9 +52,9 @@ class GeneticAlgorithm
 
 public:
 	GeneticAlgorithm(const GeneticSettings& settings);
-	GeneticAlgorithm(std::ifstream& settingsFile);
+	GeneticAlgorithm(const std::string& generationName);
 
-	void InitializePopulationFromFile(std::ifstream& inputFile);
+	void InitializePopulationFromFile(const std::string& generationName, int generationNumber);
 	void InitializeExistingPopulation(const std::vector<NeuralNetwork>& initialPopulation);
 	void InitializeNewPopulation(const NeuralNetwork& networkTemplate, int populationSize, float weightInitRange, float biasInitRange);
 
@@ -59,6 +66,9 @@ public:
 	void SaveGeneticSettings();
 	void PrepOutputFolder();
 
+	//wins are the wins achieved by population upon which the function is called
+	MatchResults Compare(GeneticAlgorithm& other, int nrBestPlayers);
+
 private:
 
 
@@ -68,9 +78,12 @@ private:
 	std::vector<std::shared_ptr<Individual>> m_Individuals;
 
 	int m_GenerationCounter;
-	std::string m_OutputPath;
 
+	//constants for file saving/loading
 	static const std::string m_ResultRootDir;
+	static const std::string m_SettingsFileName;
+	static const std::string m_GenerationFileName;
+	static const std::string m_FileExtension;
 
 	//methods
 	void ResetFitness();
@@ -94,7 +107,7 @@ private:
 
 
 
-	GeneticSettings LoadGeneticSettings(std::ifstream& settingsFile);
+	GeneticSettings LoadGeneticSettings(const std::string& GenerationName);
 
 	void SaveGeneration(std::ostream& out);
 	void LoadGeneration(std::istream& in);

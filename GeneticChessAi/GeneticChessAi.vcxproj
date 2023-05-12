@@ -185,7 +185,6 @@ xcopy /y /d "$(SolutionDir)3rdParty\SDL_Image\lib\x64\SDL2_image.dll" "$(OutDir)
   <ItemGroup>
     <ClCompile Include="3rdParty\ChessLibrary\thc.cpp" />
     <ClCompile Include="ActivationFunctions.cpp" />
-    <ClCompile Include="ChessMatch.cpp" />
     <ClCompile Include="EvalFunctions.cpp" />
     <ClCompile Include="GeneticAlgorithm.cpp" />
     <ClCompile Include="MiniMaxPlayer.cpp" />
@@ -202,7 +201,6 @@ xcopy /y /d "$(SolutionDir)3rdParty\SDL_Image\lib\x64\SDL2_image.dll" "$(OutDir)
   <ItemGroup>
     <ClInclude Include="3rdParty\ChessLibrary\thc.h" />
     <ClInclude Include="ActivationFunctions.h" />
-    <ClInclude Include="ChessMatch.h" />
     <ClInclude Include="EvalFunctions.h" />
     <ClInclude Include="GeneticAlgorithm.h" />
     <ClInclude Include="MiniMaxPlayer.h" />

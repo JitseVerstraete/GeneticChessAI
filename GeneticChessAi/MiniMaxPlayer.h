@@ -107,7 +107,7 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 		m_leafNodeCounter++;
 		return MoveValue(thc::Move(), m_EvalFunction(position));
 	}
-
+	
 	//check the transposition table
 	TTEntry entry = m_tt.GetEntryAtHash(hash);
 	if (entry.valid && entry.key == hash && entry.searchDepth >= depth)
@@ -117,6 +117,7 @@ MoveValue MiniMaxPlayer<Eval>::MiniMax(thc::ChessRules& position, int depth, flo
 		m_TranspositionsFound++;
 		return MoveValue(entry.move, entry.value);
 	}
+	
 
 
 	MoveValue bestMove{};
