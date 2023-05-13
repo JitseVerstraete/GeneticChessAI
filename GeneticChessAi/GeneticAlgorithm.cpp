@@ -165,6 +165,8 @@ MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayer
 	EvaluateFitness();
 	other.EvaluateFitness();
 
+	std::cout << "evaluating fitness done\n";
+
 	auto greaterIndividual = [](const IndividualPtr& first, const IndividualPtr& second)
 	{
 		return (first->fitness > second->fitness);
@@ -174,48 +176,65 @@ MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayer
 	std::partial_sort(m_Individuals.begin(), m_Individuals.begin() + nrBestPlayers, m_Individuals.end(), greaterIndividual);
 	std::partial_sort(other.m_Individuals.begin(), other.m_Individuals.begin() + nrBestPlayers, other.m_Individuals.end(), greaterIndividual);
 
-	std::vector<std::pair<IndividualPtr, IndividualPtr>> pairings{};
+	std::cout << "sorting by fitness done\n";
 
+	std::vector<std::vector<std::pair<IndividualPtr, IndividualPtr>>> pairings(m_Settings.threads);
+
+	int gameNr{};
 	//let every player from every play against every player of the other team with both white and black
 	for (int thisInd{}; thisInd < nrBestPlayers; thisInd++)
 	{
 		for (int otherInd{}; otherInd < nrBestPlayers; otherInd++)
 		{
 			//let every pairing play with black and white.
-			pairings.push_back({ m_Individuals[thisInd], other.m_Individuals[otherInd] });
-			pairings.push_back({ other.m_Individuals[otherInd], m_Individuals[thisInd] });
+			pairings[gameNr % m_Settings.threads].push_back({ m_Individuals[thisInd], other.m_Individuals[otherInd] });
+			gameNr++;
+			pairings[gameNr % m_Settings.threads].push_back({ other.m_Individuals[otherInd], m_Individuals[thisInd] });
+			gameNr++;
 		}
 	}
 
+
+
 	//play games
-	std::vector<GameRecord> records = ProcessGames(pairings);
+	std::vector<std::future<std::vector<GameRecord>>> futures{};
+
+	//process the games asynchronously
+	for (auto& pairingGroup : pairings)
+	{
+		futures.push_back(std::async(std::launch::async, &GeneticAlgorithm::ProcessGames, this, std::ref(pairingGroup)));
+	}
 
 	ResetFitness();
 	other.ResetFitness();
 
 
 	//process the results
-	for (const GameRecord& record : records)
+
+	for (auto& future : futures)
 	{
-		switch (record.result)
+		for (const GameRecord& record : future.get())
 		{
-		case GameResult::Draw:
-			record.pWhite->draws++;
-			record.pBlack->draws++;
-			break;
-		case GameResult::WhiteWin:
-			record.pWhite->wins++;
-			record.pBlack->losses++;
-			break;
-		case GameResult::BlackWin:
-			record.pWhite->losses++;
-			record.pBlack->wins++;
-			break;
-		case GameResult::NoResult:
-			assert(false && "it should be impossible for the game to have no result after playing!");
-			break;
-		default:
-			break;
+			switch (record.result)
+			{
+			case GameResult::Draw:
+				record.pWhite->draws++;
+				record.pBlack->draws++;
+				break;
+			case GameResult::WhiteWin:
+				record.pWhite->wins++;
+				record.pBlack->losses++;
+				break;
+			case GameResult::BlackWin:
+				record.pWhite->losses++;
+				record.pBlack->wins++;
+				break;
+			case GameResult::NoResult:
+				assert(false && "it should be impossible for the game to have no result after playing!");
+				break;
+			default:
+				break;
+			}
 		}
 	}
 

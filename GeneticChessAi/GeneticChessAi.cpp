@@ -33,7 +33,49 @@ using Eigen::VectorXf;
 
 int main(int, char**)
 {
+	GeneticAlgorithm testRun1000{ "FirstFullTestRun" };
+	testRun1000.InitializePopulationFromFile("FirstFullTestRun", 1000);
 
+	GeneticAlgorithm testRun0{ "FirstFullTestRun" };
+	testRun0.InitializePopulationFromFile("FirstFullTestRun", 0);
+
+	MatchResults result =  testRun1000.Compare(testRun0, 1);
+
+	std::cout << "wins: " << result.wins << std::endl;
+	std::cout << "draws: " << result.draws << std::endl;
+	std::cout << "losses: " << result.losses << std::endl;
+
+
+	/*
+	GeneticSettings settings{};
+	settings.PopulationName = "FirstFullTestRun";
+
+	settings.maxGenerations = 1000;
+	settings.threads = 12;
+	settings.saveFrequency = 50;
+
+	settings.gamesPlayed = 4; //every player will end up playing double this, because opponents will challenge them
+	settings.minMaxDepth = 4;
+	settings.elitismSize = 3;
+	settings.ttSize = 1'000'000; //24MB per player * 24max players at any time = 576MB maximum
+
+	settings.mutationChance = 0.05f;
+	settings.mutationDeviation = 0.5f;
+
+	GeneticAlgorithm ga{ settings };
+
+	NeuralNetwork nnTemplate{ {{768, ActivationFunc::None}, {64, ActivationFunc::ReLU}, {16, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
+	ga.InitializeNewPopulation(nnTemplate, 50, 0.5f, 0.5f);
+
+
+	Timer timer{};
+	ga.Run();
+	std::cout << std::endl << "total training time: " << timer.GetDuration<std::ratio<3600, 1>>() << " hours\n";
+	*/
+
+
+
+	/*
 	GeneticSettings settings{};
 	settings.PopulationName = "PopLoad";
 
@@ -59,13 +101,14 @@ int main(int, char**)
 	ga.SaveGeneration();
 
 	ga2.InitializePopulationFromFile("PopLoad", 0);
-	
+
 
 	MatchResults result = ga.Compare(ga2, 4);
 
 	std::cout << "wins: " << result.wins << std::endl;
 	std::cout << "draws: " << result.draws << std::endl;
-	 std::cout << "losses: " << result.losses << std::endl;
+	std::cout << "losses: " << result.losses << std::endl;
+	*/
 
 
 
@@ -250,35 +293,4 @@ int main(int, char**)
 	std::cout << "average = " << totalTime / iterations << std::endl;
 
 	*/
-
-
-	/*
-	GeneticSettings settings{};
-	settings.PopulationName = "testGen";
-
-	settings.maxGenerations = 100;
-	settings.threads = 12;
-	settings.saveFrequency = 10;
-
-	settings.gamesPlayed = 4; //every player will end up playing double this, because opponents will challenge them
-	settings.minMaxDepth = 4;
-	settings.elitismSize = 3;
-	settings.ttSize = 1'000'000; //24MB per player * 24max players at any time = 576MB maximum
-
-	settings.mutationChance = 0.05f;
-	settings.mutationDeviation = 0.5f;
-
-
-	GeneticAlgorithm ga{ settings };
-
-	NeuralNetwork nnTemplate{ {{768, ActivationFunc::None}, {64, ActivationFunc::ReLU}, {16, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
-	ga.InitializeNewPopulation(nnTemplate, 50, 0.5f, 0.5f);
-
-
-	Timer timer{};
-	ga.Run();
-	std::cout << std::endl << "total training time: " << timer.GetDuration<std::ratio<60, 1>>() << " minutes\n";
-	*/
-
-
 }
