@@ -547,10 +547,8 @@ NeuralNetwork GeneticAlgorithm::Crossover(NeuralNetwork* parent1, NeuralNetwork*
 	switch (m_Settings.crossover)
 	{
 	case CrossoverType::None:
-		std::cout << "no crossover\n";
 		break;
 	case CrossoverType::Uniform:
-		std::cout << "uniform crossover\n";
 		for (int index{}; index < childNetwork.GetNrLayerMatrices(); index++)
 		{
 			MatrixXf& matrix = childNetwork.GetLayerMatrix(index);
