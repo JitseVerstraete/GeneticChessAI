@@ -33,12 +33,43 @@ using Eigen::VectorXf;
 
 int main(int, char**)
 {
-	/*
-	GeneticAlgorithm testRun1000{ "LessPopulationMoreGames" };
-	testRun1000.InitializePopulationFromFile("LessPopulationMoreGames", 1000);
 
-	GeneticAlgorithm testRun0{ "LessPopulationMoreGames" };
-	testRun0.InitializePopulationFromFile("LessPopulationMoreGames", 0);
+
+	/*
+	GeneticSettings settings{};
+	settings.PopulationName = "tempTest";
+
+	settings.maxGenerations = 1000;
+	settings.threads = 12;
+	settings.saveFrequency = 50;
+
+	settings.selection = SelectionType::Rank;
+	settings.gamesPlayed = 5; //every player will end up playing double this, because opponents will challenge them
+	settings.minMaxDepth = 4;
+	settings.elitismSize = 3;
+	settings.ttSize = 1'000'000; //24MB per player * 24max players at any time = 576MB maximum
+	settings.crossover = CrossoverType::None;
+
+	settings.mutationChance = 0.05f;
+	settings.mutationDeviation = 0.5f;
+
+	GeneticAlgorithm ga{ settings };
+
+	NeuralNetwork nnTemplate{ {{768, ActivationFunc::None}, {64, ActivationFunc::ReLU}, {16, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
+	ga.InitializeNewPopulation(nnTemplate, 10, 0.5f, 0.5f);
+	
+
+	ga.Run();
+	*/
+
+
+
+	/*
+	GeneticAlgorithm testRun1000{ "NoCrossover" };
+	testRun1000.InitializePopulationFromFile("NoCrossover", 1000);
+
+	GeneticAlgorithm testRun0{ "NoCrossover" };
+	testRun0.InitializePopulationFromFile("NoCrossover", 0);
 
 	MatchResults result =  testRun1000.Compare(testRun0, 3);
 
@@ -46,9 +77,10 @@ int main(int, char**)
 	std::cout << "draws: " << result.draws << std::endl;
 	std::cout << "losses: " << result.losses << std::endl;
 	*/
-
-
 	
+
+
+	/*
 	GeneticSettings settings{};
 	settings.PopulationName = "NoCrossover";
 
@@ -74,5 +106,6 @@ int main(int, char**)
 	Timer timer{};
 	ga.Run();
 	std::cout << std::endl << "total training time: " << timer.GetDuration<std::ratio<3600, 1>>() << " hours\n";
+	*/
 	
 }
