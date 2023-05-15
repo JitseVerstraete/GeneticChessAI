@@ -486,13 +486,6 @@ void GeneticAlgorithm::EvaluateFitness(int gamesplayed)
 			return (first->fitness > second->fitness);
 		};
 
-		std::cout << "UNSORTED:\n";
-		for (auto& ind : m_Individuals)
-		{
-			std::cout << ind.get() << "has raw score: " << ind->fitness << std::endl;
-		}
-		std::cout << std::endl;
-
 		std::sort(m_Individuals.begin(), m_Individuals.end(), greaterIndividual);
 
 		std::cout << "SORTED:\n";

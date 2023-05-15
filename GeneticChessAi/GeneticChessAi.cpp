@@ -35,33 +35,6 @@ int main(int, char**)
 {
 
 
-	/*
-	GeneticSettings settings{};
-	settings.PopulationName = "tempTest";
-
-	settings.maxGenerations = 1000;
-	settings.threads = 12;
-	settings.saveFrequency = 50;
-
-	settings.selection = SelectionType::Rank;
-	settings.gamesPlayed = 5; //every player will end up playing double this, because opponents will challenge them
-	settings.minMaxDepth = 4;
-	settings.elitismSize = 3;
-	settings.ttSize = 1'000'000; //24MB per player * 24max players at any time = 576MB maximum
-	settings.crossover = CrossoverType::None;
-
-	settings.mutationChance = 0.05f;
-	settings.mutationDeviation = 0.5f;
-
-	GeneticAlgorithm ga{ settings };
-
-	NeuralNetwork nnTemplate{ {{768, ActivationFunc::None}, {64, ActivationFunc::ReLU}, {16, ActivationFunc::ReLU}, {1, ActivationFunc::Tanh}} , 0.f };
-	ga.InitializeNewPopulation(nnTemplate, 10, 0.5f, 0.5f);
-	
-
-	ga.Run();
-	*/
-
 
 
 	/*
@@ -80,18 +53,20 @@ int main(int, char**)
 	
 
 
-	/*
+	
 	GeneticSettings settings{};
-	settings.PopulationName = "NoCrossover";
+	settings.PopulationName = "NoCrossoverRankSelection";
 
 	settings.maxGenerations = 1000;
 	settings.threads = 12;
 	settings.saveFrequency = 50;
 
+	settings.selection = SelectionType::Rank;
 	settings.gamesPlayed = 10; //every player will end up playing double this, because opponents will challenge them
 	settings.minMaxDepth = 4;
-	settings.elitismSize = 3;
 	settings.ttSize = 1'000'000; //24MB per player * 24max players at any time = 576MB maximum
+	settings.elitismSize = 3;
+
 	settings.crossover = CrossoverType::None;
 
 	settings.mutationChance = 0.05f;
@@ -106,6 +81,6 @@ int main(int, char**)
 	Timer timer{};
 	ga.Run();
 	std::cout << std::endl << "total training time: " << timer.GetDuration<std::ratio<3600, 1>>() << " hours\n";
-	*/
+	
 	
 }
