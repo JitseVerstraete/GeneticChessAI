@@ -10,6 +10,12 @@ enum class CrossoverType
 	SinglePoint = 2
 };
 
+enum class SelectionType
+{
+	Roulette = 0,
+	Rank = 1
+};
+
 struct GeneticSettings
 {
 	//general
@@ -20,6 +26,7 @@ struct GeneticSettings
 	int saveFrequency = 0;
 
 	//selection
+	SelectionType selection = SelectionType::Roulette;
 	int gamesPlayed = 10;
 	int minMaxDepth = 2;
 	int ttSize = 1'000'000;

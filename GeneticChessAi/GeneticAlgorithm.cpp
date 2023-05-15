@@ -171,7 +171,7 @@ MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayer
 
 	//compare the X best players of both generations against each other
 	EvaluateFitness(m_Individuals.size() - 1);
-	other.EvaluateFitness(other.m_Individuals.size() -1);
+	other.EvaluateFitness(other.m_Individuals.size() - 1);
 
 	std::cout << "evaluating fitness done\n";
 
@@ -183,8 +183,6 @@ MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayer
 	//sort 
 	std::partial_sort(m_Individuals.begin(), m_Individuals.begin() + nrBestPlayers, m_Individuals.end(), greaterIndividual);
 	std::partial_sort(other.m_Individuals.begin(), other.m_Individuals.begin() + nrBestPlayers, other.m_Individuals.end(), greaterIndividual);
-
-	std::cout << "sorting by fitness done\n";
 
 	std::vector<std::vector<std::pair<IndividualPtr, IndividualPtr>>> pairings(m_Settings.threads);
 
@@ -286,6 +284,7 @@ void GeneticAlgorithm::SaveGeneticSettings()
 		<< m_Settings.maxGenerations << ' '
 		<< m_Settings.threads << ' '
 		<< m_Settings.saveFrequency << ' '
+		<< (int)m_Settings.selection << ' '
 		<< m_Settings.gamesPlayed << ' '
 		<< m_Settings.minMaxDepth << ' '
 		<< m_Settings.ttSize << ' '
@@ -303,34 +302,37 @@ GeneticSettings GeneticAlgorithm::LoadGeneticSettings(const std::string& Generat
 	ss << m_ResultRootDir << '/' << GenerationName << '/' << m_SettingsFileName;
 	std::ifstream settingsFile{ ss.str() };
 
+	GeneticSettings settings{};
 	if (settingsFile)
 	{
 
-		GeneticSettings settings{};
 
 		settingsFile >> settings.PopulationName;
 		settingsFile >> settings.maxGenerations;
 		settingsFile >> settings.threads;
 		settingsFile >> settings.saveFrequency;
+		int selectionInt{};
+		settingsFile >> selectionInt;
+		settings.selection = static_cast<SelectionType>(selectionInt);
 		settingsFile >> settings.gamesPlayed;
 		settingsFile >> settings.minMaxDepth;
 		settingsFile >> settings.ttSize;
 		settingsFile >> settings.elitismSize;
 		int crossoverInt{};
 		settingsFile >> crossoverInt;
-		m_Settings.crossover = (CrossoverType)crossoverInt;
+		settings.crossover = static_cast<CrossoverType>(crossoverInt);
 		settingsFile >> settings.mutationChance;
 		settingsFile >> settings.mutationDeviation;
 		settingsFile >> settings.mutationMax;
 
 		settingsFile.close();
 
-		return settings;
 	}
 	else
 	{
 		throw std::exception("input file does not exist");
 	}
+	return settings;
 }
 
 void GeneticAlgorithm::SaveGeneration(std::ostream& out)
@@ -472,6 +474,44 @@ void GeneticAlgorithm::EvaluateFitness(int gamesplayed)
 			default:
 				break;
 			}
+		}
+	}
+
+
+	//if rank, sort everyone based on fitness and set the fitness to rank fitness
+	if (m_Settings.selection == SelectionType::Rank)
+	{
+		auto greaterIndividual = [](const IndividualPtr& first, const IndividualPtr& second)
+		{
+			return (first->fitness > second->fitness);
+		};
+
+		std::cout << "UNSORTED:\n";
+		for (auto& ind : m_Individuals)
+		{
+			std::cout << ind.get() << "has raw score: " << ind->fitness << std::endl;
+		}
+		std::cout << std::endl;
+
+		std::sort(m_Individuals.begin(), m_Individuals.end(), greaterIndividual);
+
+		std::cout << "SORTED:\n";
+		for (auto& ind : m_Individuals)
+		{
+			std::cout << ind.get() << "has raw score: " << ind->fitness << std::endl;
+		}
+		std::cout << std::endl;
+
+		float maxRankFitness = static_cast<float>(m_Individuals.size());
+		for (int rank{}; rank < m_Individuals.size(); rank++)
+		{
+			m_Individuals[rank]->fitness = maxRankFitness - rank;
+		}
+
+		std::cout << "SORTED RANK:\n";
+		for (auto& ind : m_Individuals)
+		{
+			std::cout << ind.get() << " has rank score: " << ind->fitness << std::endl;
 		}
 	}
 
