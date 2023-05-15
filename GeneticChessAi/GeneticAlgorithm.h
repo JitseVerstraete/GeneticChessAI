@@ -3,7 +3,12 @@
 #include <vector>
 #include "ChessGame.h"
 
-
+enum class CrossoverType
+{
+	None = 0,
+	Uniform = 1,
+	SinglePoint = 2
+};
 
 struct GeneticSettings
 {
@@ -21,6 +26,7 @@ struct GeneticSettings
 	int elitismSize = 0;
 
 	//crossover
+	CrossoverType crossover = CrossoverType::Uniform;
 
 	//mutation
 	float mutationChance = 0.1f;
@@ -97,6 +103,7 @@ private:
 
 	GameRecord PlayGame(IndividualPtr white, IndividualPtr black);
 	std::vector<GameRecord> ProcessGames(const std::vector<std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>>>& pairings);
+	void EvaluateFitness(int gamesplayed);
 	void EvaluateFitness();
 
 	NeuralNetwork Crossover(NeuralNetwork* parent1, NeuralNetwork* parent2);

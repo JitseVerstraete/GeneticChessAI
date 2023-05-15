@@ -142,6 +142,14 @@ void GeneticAlgorithm::PrepOutputFolder()
 	std::stringstream ss{};
 	ss << m_ResultRootDir << '/' << m_Settings.PopulationName;
 	std::string path = ss.str();
+
+	if (std::filesystem::exists(path))
+	{
+		std::cout << "YOU ARE ABOUT TO OVERRIDE AN EXISITING FOLDER (" << m_Settings.PopulationName << "), DO YOU WISH TO CONTINUE ? (press enter)\n";
+		std::cin.get();
+		std::cout << "RESUMING...\n";
+	}
+
 	std::filesystem::remove_all(path);
 	std::filesystem::create_directories(path);
 
@@ -162,8 +170,8 @@ MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayer
 
 
 	//compare the X best players of both generations against each other
-	EvaluateFitness();
-	other.EvaluateFitness();
+	EvaluateFitness(m_Individuals.size() - 1);
+	other.EvaluateFitness(other.m_Individuals.size() -1);
 
 	std::cout << "evaluating fitness done\n";
 
@@ -282,6 +290,7 @@ void GeneticAlgorithm::SaveGeneticSettings()
 		<< m_Settings.minMaxDepth << ' '
 		<< m_Settings.ttSize << ' '
 		<< m_Settings.elitismSize << ' '
+		<< (int)m_Settings.crossover << ' '
 		<< m_Settings.mutationChance << ' '
 		<< m_Settings.mutationDeviation << ' '
 		<< m_Settings.mutationMax << ' ';
@@ -307,6 +316,9 @@ GeneticSettings GeneticAlgorithm::LoadGeneticSettings(const std::string& Generat
 		settingsFile >> settings.minMaxDepth;
 		settingsFile >> settings.ttSize;
 		settingsFile >> settings.elitismSize;
+		int crossoverInt{};
+		settingsFile >> crossoverInt;
+		m_Settings.crossover = (CrossoverType)crossoverInt;
 		settingsFile >> settings.mutationChance;
 		settingsFile >> settings.mutationDeviation;
 		settingsFile >> settings.mutationMax;
@@ -392,7 +404,7 @@ std::vector<GeneticAlgorithm::GameRecord> GeneticAlgorithm::ProcessGames(const s
 	return records;
 }
 
-void GeneticAlgorithm::EvaluateFitness()
+void GeneticAlgorithm::EvaluateFitness(int gamesplayed)
 {
 	ResetFitness();
 
@@ -407,24 +419,21 @@ void GeneticAlgorithm::EvaluateFitness()
 
 	for (int playerIndex{}; playerIndex < m_Individuals.size(); playerIndex++)
 	{
-		for (int gameNr{}; gameNr < m_Settings.gamesPlayed; gameNr++)
+		for (int gameNr{}; gameNr < gamesplayed; gameNr++)
 		{
-			int gameIndex = gameNr + (playerIndex * m_Settings.gamesPlayed);
 
 			int opponentIndex = (playerIndex + (gameNr + 1)) % m_Individuals.size();
 
 			//create pair
 			std::shared_ptr<Individual> player{ m_Individuals[playerIndex] };
 			std::shared_ptr<Individual>  opponent{ m_Individuals[opponentIndex] };
-			auto gamePair = (gameNr < m_Settings.gamesPlayed / 2) ?
-				std::pair(std::shared_ptr<Individual>(player), std::shared_ptr<Individual>(opponent)) :
-				std::pair(std::shared_ptr<Individual>(opponent), std::shared_ptr<Individual>(player));
+			auto gamePair = std::pair(std::shared_ptr<Individual>(player), std::shared_ptr<Individual>(opponent));
 
 			//put the pairings in separate lists according to how many threads are used
+			int gameIndex = gameNr + (playerIndex * gamesplayed);
 			gamePairings[gameIndex % m_Settings.threads].push_back(gamePair);
 		}
 	}
-
 
 	std::vector<std::future<std::vector<GameRecord>>> futures{};
 
@@ -466,6 +475,11 @@ void GeneticAlgorithm::EvaluateFitness()
 		}
 	}
 
+}
+
+void GeneticAlgorithm::EvaluateFitness()
+{
+	EvaluateFitness(m_Settings.gamesPlayed);
 }
 
 std::vector<std::pair<GeneticAlgorithm::IndividualPtr, GeneticAlgorithm::IndividualPtr>> GeneticAlgorithm::SelectParents()
@@ -530,18 +544,32 @@ NeuralNetwork GeneticAlgorithm::Crossover(NeuralNetwork* parent1, NeuralNetwork*
 	//uniform crossover
 	NeuralNetwork childNetwork = *parent1;
 
-
-	for (int index{}; index < childNetwork.GetNrLayerMatrices(); index++)
+	switch (m_Settings.crossover)
 	{
-		MatrixXf& matrix = childNetwork.GetLayerMatrix(index);
-
-		for (int row{}; row < matrix.rows(); ++row)
+	case CrossoverType::None:
+		std::cout << "no crossover\n";
+		break;
+	case CrossoverType::Uniform:
+		std::cout << "uniform crossover\n";
+		for (int index{}; index < childNetwork.GetNrLayerMatrices(); index++)
 		{
-			for (int col{}; col < matrix.cols(); ++col)
+			MatrixXf& matrix = childNetwork.GetLayerMatrix(index);
+
+			for (int row{}; row < matrix.rows(); ++row)
 			{
-				matrix(row, col) = (rand() % 2 == 0) ? parent1->GetLayerMatrix(index)(row, col) : parent2->GetLayerMatrix(index)(row, col);
+				for (int col{}; col < matrix.cols(); ++col)
+				{
+					matrix(row, col) = (rand() % 2 == 0) ? parent1->GetLayerMatrix(index)(row, col) : parent2->GetLayerMatrix(index)(row, col);
+				}
 			}
 		}
+
+		break;
+	case CrossoverType::SinglePoint:
+		throw std::exception("not implemented");
+		break;
+	default:
+		break;
 	}
 
 	return childNetwork;
