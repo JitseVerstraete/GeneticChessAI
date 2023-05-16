@@ -1,0 +1,1 @@
+NoCrossoverRankSelection 1000 12 50 1 10 4 1000000 3 0 0.05 0.5 3.40282e+38 

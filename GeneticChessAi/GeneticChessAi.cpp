@@ -37,23 +37,23 @@ int main(int, char**)
 
 
 
-	/*
-	GeneticAlgorithm testRun1000{ "NoCrossover" };
-	testRun1000.InitializePopulationFromFile("NoCrossover", 1000);
+	
+	GeneticAlgorithm testRun1000{ "NoCrossoverRankSelection" };
+	testRun1000.InitializePopulationFromFile("NoCrossoverRankSelection", 1000);
 
-	GeneticAlgorithm testRun0{ "NoCrossover" };
-	testRun0.InitializePopulationFromFile("NoCrossover", 0);
+	GeneticAlgorithm testRun0{ "NoCrossoverRankSelection" };
+	testRun0.InitializePopulationFromFile("NoCrossoverRankSelection", 0);
 
 	MatchResults result =  testRun1000.Compare(testRun0, 3);
 
 	std::cout << "wins: " << result.wins << std::endl;
 	std::cout << "draws: " << result.draws << std::endl;
 	std::cout << "losses: " << result.losses << std::endl;
-	*/
+	
 	
 
 
-	
+	/*
 	GeneticSettings settings{};
 	settings.PopulationName = "NoCrossoverRankSelection";
 
@@ -81,6 +81,7 @@ int main(int, char**)
 	Timer timer{};
 	ga.Run();
 	std::cout << std::endl << "total training time: " << timer.GetDuration<std::ratio<3600, 1>>() << " hours\n";
+	*/
 	
 	
 }
