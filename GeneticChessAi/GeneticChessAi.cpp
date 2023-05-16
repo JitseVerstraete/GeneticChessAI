@@ -37,25 +37,28 @@ int main(int, char**)
 
 
 
-	
-	GeneticAlgorithm testRun1000{ "NoCrossoverRankSelection" };
-	testRun1000.InitializePopulationFromFile("NoCrossoverRankSelection", 1000);
-
-	GeneticAlgorithm testRun0{ "NoCrossoverRankSelection" };
-	testRun0.InitializePopulationFromFile("NoCrossoverRankSelection", 0);
-
-	MatchResults result =  testRun1000.Compare(testRun0, 3);
-
-	std::cout << "wins: " << result.wins << std::endl;
-	std::cout << "draws: " << result.draws << std::endl;
-	std::cout << "losses: " << result.losses << std::endl;
-	
-	
-
-
 	/*
+		GeneticAlgorithm testRun1000{ "NoCrossRankHighMutation" };
+		testRun1000.InitializePopulationFromFile("NoCrossRankHighMutation", 1000);
+
+		GeneticAlgorithm testRun0{ "NoCrossRankHighMutation" };
+		testRun0.InitializePopulationFromFile("NoCrossRankHighMutation", 0);
+
+		MatchResults result =  testRun1000.Compare(testRun0, 3);
+
+		std::cout << "wins: " << result.wins << std::endl;
+		std::cout << "draws: " << result.draws << std::endl;
+		std::cout << "losses: " << result.losses << std::endl;
+	*/
+	
+
+
+
+
+
+	
 	GeneticSettings settings{};
-	settings.PopulationName = "NoCrossoverRankSelection";
+	settings.PopulationName = "NoCrossRankHighMutation";
 
 	settings.maxGenerations = 1000;
 	settings.threads = 12;
@@ -69,8 +72,8 @@ int main(int, char**)
 
 	settings.crossover = CrossoverType::None;
 
-	settings.mutationChance = 0.05f;
-	settings.mutationDeviation = 0.5f;
+	settings.mutationChance = 0.2f;
+	settings.mutationDeviation = 1.f;
 
 	GeneticAlgorithm ga{ settings };
 
@@ -81,7 +84,8 @@ int main(int, char**)
 	Timer timer{};
 	ga.Run();
 	std::cout << std::endl << "total training time: " << timer.GetDuration<std::ratio<3600, 1>>() << " hours\n";
-	*/
 	
 	
+
+
 }

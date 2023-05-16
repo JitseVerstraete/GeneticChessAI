@@ -488,23 +488,10 @@ void GeneticAlgorithm::EvaluateFitness(int gamesplayed)
 
 		std::sort(m_Individuals.begin(), m_Individuals.end(), greaterIndividual);
 
-		std::cout << "SORTED:\n";
-		for (auto& ind : m_Individuals)
-		{
-			std::cout << ind.get() << "has raw score: " << ind->fitness << std::endl;
-		}
-		std::cout << std::endl;
-
 		float maxRankFitness = static_cast<float>(m_Individuals.size());
 		for (int rank{}; rank < m_Individuals.size(); rank++)
 		{
 			m_Individuals[rank]->fitness = maxRankFitness - rank;
-		}
-
-		std::cout << "SORTED RANK:\n";
-		for (auto& ind : m_Individuals)
-		{
-			std::cout << ind.get() << " has rank score: " << ind->fitness << std::endl;
 		}
 	}
 
