@@ -50,15 +50,15 @@ int main(int, char**)
 		std::cout << "draws: " << result.draws << std::endl;
 		std::cout << "losses: " << result.losses << std::endl;
 	*/
-	
 
 
 
 
 
-	
+
+
 	GeneticSettings settings{};
-	settings.PopulationName = "NoCrossRankHighMutation";
+	settings.PopulationName = "NoCrossRankExtremeMutation";
 
 	settings.maxGenerations = 1000;
 	settings.threads = 12;
@@ -72,8 +72,8 @@ int main(int, char**)
 
 	settings.crossover = CrossoverType::None;
 
-	settings.mutationChance = 0.2f;
-	settings.mutationDeviation = 1.f;
+	settings.mutationChance = 0.5f;
+	settings.mutationDeviation = 2.f;
 
 	GeneticAlgorithm ga{ settings };
 
@@ -84,8 +84,8 @@ int main(int, char**)
 	Timer timer{};
 	ga.Run();
 	std::cout << std::endl << "total training time: " << timer.GetDuration<std::ratio<3600, 1>>() << " hours\n";
-	
-	
+
+
 
 
 }
