@@ -160,11 +160,6 @@ void GeneticAlgorithm::PrepOutputFolder()
 
 MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayers)
 {
-	enum class Team
-	{
-		Team1,
-		Team2
-	};
 
 	MatchResults results{};
 
@@ -183,6 +178,7 @@ MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayer
 	//sort 
 	std::partial_sort(m_Individuals.begin(), m_Individuals.begin() + nrBestPlayers, m_Individuals.end(), greaterIndividual);
 	std::partial_sort(other.m_Individuals.begin(), other.m_Individuals.begin() + nrBestPlayers, other.m_Individuals.end(), greaterIndividual);
+
 
 	std::vector<std::vector<std::pair<IndividualPtr, IndividualPtr>>> pairings(m_Settings.threads);
 
@@ -216,7 +212,6 @@ MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayer
 
 
 	//process the results
-
 	for (auto& future : futures)
 	{
 		for (const GameRecord& record : future.get())
@@ -241,6 +236,47 @@ MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayer
 			default:
 				break;
 			}
+
+			int whiteIsThis{};
+			auto whiteIsThisIt = std::find(m_Individuals.begin(), m_Individuals.end(), record.pWhite);
+			whiteIsThis = whiteIsThisIt != m_Individuals.end();
+
+			int whiteRank{};
+			int blackRank{};
+
+			if (whiteIsThis)
+			{
+				auto whiteFoundIt = std::find(m_Individuals.begin(), m_Individuals.end(), record.pWhite);
+				auto blackFoundIt = std::find(other.m_Individuals.begin(), other.m_Individuals.end(), record.pBlack);
+				whiteRank = std::distance(m_Individuals.begin(), whiteFoundIt);
+				blackRank = std::distance(other.m_Individuals.begin(), blackFoundIt);
+			}
+			else
+			{
+				auto whiteFoundIt = std::find(other.m_Individuals.begin(), other.m_Individuals.end(), record.pWhite);
+				auto blackFoundIt = std::find(m_Individuals.begin(), m_Individuals.end(), record.pBlack);
+				whiteRank = std::distance(other.m_Individuals.begin(), whiteFoundIt);
+				blackRank = std::distance(m_Individuals.begin(), blackFoundIt);
+
+			}
+
+			std::cout << "WHITE PLAYER TEAM: " << (whiteIsThis ? "This team" : "Other Team") << ", RANK: " << whiteRank + 1 << std::endl;
+			std::cout << "BLACK PLAYER TEAM: " << (whiteIsThis ? "Other team" : "This Team") << " RANK: " << blackRank + 1 << std::endl;
+			switch (record.result)
+			{
+			case GameResult::Draw:
+				std::cout << "RESULT: DRAW.\n";
+				break;
+			case GameResult::WhiteWin:
+				std::cout << "RESULT: WHITE WIN.\n";
+				break;
+			case GameResult::BlackWin:
+				std::cout << "RESULT: BLACK WIN.\n";
+				break;
+			default:
+				break;
+			}
+			std::cout << std::endl;
 		}
 	}
 
@@ -258,17 +294,17 @@ MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayer
 	}
 
 
-	std::cout << "this wins:" << results.wins << std::endl;
-	std::cout << "this draws:" << results.draws << std::endl;
-	std::cout << "this losses:" << results.losses << std::endl << std::endl;
+	//std::cout << "this wins:" << results.wins << std::endl;
+	//std::cout << "this draws:" << results.draws << std::endl;
+	//std::cout << "this losses:" << results.losses << std::endl << std::endl;
 
-	std::cout << "other wins:" << cmpResults.wins << std::endl;
-	std::cout << "other draws:" << cmpResults.draws << std::endl;
-	std::cout << "other losses:" << cmpResults.losses << std::endl << std::endl;
+	//std::cout << "other wins:" << cmpResults.wins << std::endl;
+	//std::cout << "other draws:" << cmpResults.draws << std::endl;
+	//std::cout << "other losses:" << cmpResults.losses << std::endl << std::endl;
 
-	std::cout << "wins match: " << std::boolalpha << (results.wins == cmpResults.losses) << std::endl;
-	std::cout << "draws match: " << std::boolalpha << (results.draws == cmpResults.draws) << std::endl;
-	std::cout << "losses match: " << std::boolalpha << (results.losses == cmpResults.wins) << std::endl << std::endl;
+	//std::cout << "wins match: " << std::boolalpha << (results.wins == cmpResults.losses) << std::endl;
+	//std::cout << "draws match: " << std::boolalpha << (results.draws == cmpResults.draws) << std::endl;
+	//std::cout << "losses match: " << std::boolalpha << (results.losses == cmpResults.wins) << std::endl << std::endl;
 
 
 	return results;
