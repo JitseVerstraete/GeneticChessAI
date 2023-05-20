@@ -51,19 +51,19 @@ int main(int, char**)
 
 	
 	GeneticSettings settings{};
-	settings.PopulationName = "LessPopulationMoreGames2";
+	settings.PopulationName = "NoCrossoverRankSelection2";
 
 	settings.maxGenerations = 1000;
 	settings.threads = 12;
 	settings.saveFrequency = 50;
 
-	settings.selection = SelectionType::Roulette;
+	settings.selection = SelectionType::Rank;
 	settings.gamesPlayed = 10; //every player will end up playing double this, because opponents will challenge them
 	settings.minMaxDepth = 4;
 	settings.ttSize = 1'000'000; //24MB per player * 24max players at any time = 576MB maximum
 	settings.elitismSize = 3;
 
-	settings.crossover = CrossoverType::Uniform;
+	settings.crossover = CrossoverType::None;
 
 	settings.mutationChance = 0.05f;
 	settings.mutationDeviation = 0.5f;
