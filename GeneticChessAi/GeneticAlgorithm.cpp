@@ -276,6 +276,7 @@ MatchResults GeneticAlgorithm::Compare(GeneticAlgorithm& other, int nrBestPlayer
 			default:
 				break;
 			}
+			std::cout << record.gameString << std::endl;
 			std::cout << std::endl;
 		}
 	}
@@ -427,6 +428,7 @@ GeneticAlgorithm::GameRecord GeneticAlgorithm::PlayGame(IndividualPtr pWhite, In
 	game.PlayGame();
 
 	record.result = game.GetGameResult();
+	record.gameString = game.GetMovesRecord();
 	return record;
 }
 

@@ -34,22 +34,21 @@ using Eigen::VectorXf;
 int main(int, char**)
 {
 
-	/*
-		GeneticAlgorithm testRun1000{ "NoCrossRankHighMutation" };
-		testRun1000.InitializePopulationFromFile("NoCrossRankHighMutation", 1000);
+	GeneticAlgorithm testRun1000{ "NoCrossoverRankSelection2" };
+	testRun1000.InitializePopulationFromFile("NoCrossoverRankSelection2", 1000);
 
-		GeneticAlgorithm testRun0{ "NoCrossRankHighMutation" };
-		testRun0.InitializePopulationFromFile("NoCrossRankHighMutation", 0);
+	GeneticAlgorithm testRun0{ "NoCrossoverRankSelection2" };
+	testRun0.InitializePopulationFromFile("NoCrossoverRankSelection2", 0);
 
-		MatchResults result =  testRun1000.Compare(testRun0, 3);
+	MatchResults result = testRun1000.Compare(testRun0, 3);
 
-		std::cout << "wins: " << result.wins << std::endl;
-		std::cout << "draws: " << result.draws << std::endl;
-		std::cout << "losses: " << result.losses << std::endl;
-	*/
+	std::cout << "wins: " << result.wins << std::endl;
+	std::cout << "draws: " << result.draws << std::endl;
+	std::cout << "losses: " << result.losses << std::endl;
 
 
-	
+
+/*
 	GeneticSettings settings{};
 	settings.PopulationName = "NoCrossoverRankSelection2";
 
@@ -77,6 +76,7 @@ int main(int, char**)
 	Timer timer{};
 	ga.Run();
 	std::cout << std::endl << "total training time: " << timer.GetDuration<std::ratio<3600, 1>>() << " hours\n";
-	
+*/
+
 
 }

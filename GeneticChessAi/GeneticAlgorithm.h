@@ -106,6 +106,7 @@ private:
 		IndividualPtr pWhite;
 		IndividualPtr pBlack;
 		GameResult result;
+		std::string gameString;
 	};
 
 	GameRecord PlayGame(IndividualPtr white, IndividualPtr black);
