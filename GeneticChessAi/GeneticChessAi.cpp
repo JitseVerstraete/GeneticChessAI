@@ -34,14 +34,14 @@ using Eigen::VectorXf;
 int main(int, char**)
 {
 
-	GeneticAlgorithm testRun1000{ "NoCrossoverRankSelection2" };
-	testRun1000.InitializePopulationFromFile("NoCrossoverRankSelection2", 1000);
+	GeneticAlgorithm thisGeneration{ "NoCrossoverRankSelection2" };
+	thisGeneration.InitializePopulationFromFile("NoCrossoverRankSelection2", 1000);
 
-	GeneticAlgorithm testRun0{ "NoCrossoverRankSelection2" };
-	testRun0.InitializePopulationFromFile("NoCrossoverRankSelection2", 0);
+	GeneticAlgorithm otherGeneration{ "NoCrossover" };
+	otherGeneration.InitializePopulationFromFile("NoCrossover", 1000);
 
-	MatchResults result = testRun1000.Compare(testRun0, 3);
-
+	MatchResults result = thisGeneration.Compare(otherGeneration, 3);
+		
 	std::cout << "wins: " << result.wins << std::endl;
 	std::cout << "draws: " << result.draws << std::endl;
 	std::cout << "losses: " << result.losses << std::endl;

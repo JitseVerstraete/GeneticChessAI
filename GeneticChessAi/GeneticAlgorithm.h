@@ -48,7 +48,7 @@ struct MatchResults
 	int losses;
 };
 
-class GeneticAlgorithm
+class GeneticAlgorithm final
 {
 	//structs
 	struct Individual

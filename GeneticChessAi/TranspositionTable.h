@@ -28,7 +28,7 @@ struct TTEntry
 
 
 
-class TranspositionTable
+class TranspositionTable final
 {
 public:
 	TranspositionTable(uint32_t size);
